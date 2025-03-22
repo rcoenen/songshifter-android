@@ -51,6 +51,14 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         
+        // Set up custom action bar
+        supportActionBar?.let { actionBar ->
+            actionBar.setDisplayShowCustomEnabled(true)
+            actionBar.setDisplayShowTitleEnabled(false)
+            val customView = layoutInflater.inflate(R.layout.action_bar, null)
+            actionBar.customView = customView
+        }
+        
         preferencesHelper = PreferencesHelper(this)
         
         // Initialize views
