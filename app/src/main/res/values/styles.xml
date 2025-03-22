@@ -55,7 +55,7 @@
         <item name="strokeColor">@color/primary</item>
     </style>
 
-    <style name="Theme.MusicRedirector" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.MusicRedirector" parent="Theme.Material3.DayNight">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_dark</item>
         <item name="colorOnPrimary">@color/text_on_primary</item>
@@ -68,7 +68,7 @@
         <item name="actionBarStyle">@style/ActionBarStyle</item>
     </style>
 
-    <style name="ActionBarStyle" parent="Widget.MaterialComponents.Light.ActionBar">
+    <style name="ActionBarStyle" parent="Widget.Material3.ActionBar.Solid">
         <item name="android:background">@color/surface</item>
         <item name="background">@color/surface</item>
         <item name="android:elevation">4dp</item>
