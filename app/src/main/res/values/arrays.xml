@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="preferred_platform_entries">
+        <item>Spotify</item>
+        <item>YouTube Music</item>
+    </string-array>
+    
+    <string-array name="preferred_platform_values">
+        <item>spotify</item>
+        <item>youtube_music</item>
+    </string-array>
+</resources> 

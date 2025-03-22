@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">Music Redirector</string>
+    <string name="settings">Settings</string>
+    
+    <!-- Settings Screen -->
+    <string name="pref_category_redirections">Redirection Settings</string>
+    <string name="pref_enable_all">Enable All Redirections</string>
+    <string name="pref_enable_all_summary">Master toggle for all redirections</string>
+    
+    <string name="pref_category_platforms">Platform Settings</string>
+    <string name="pref_preferred_platform">Preferred Platform</string>
+    <string name="pref_preferred_platform_summary">Choose your preferred music streaming platform</string>
+    
+    <string name="pref_category_source_platforms">Source Platform Settings</string>
+    <string name="pref_enable_spotify">Enable Spotify Redirection</string>
+    <string name="pref_enable_spotify_summary">Redirect Spotify links to preferred platform</string>
+    <string name="pref_enable_youtube_music">Enable YouTube Music Redirection</string>
+    <string name="pref_enable_youtube_music_summary">Redirect YouTube Music links to preferred platform</string>
+    <string name="pref_enable_shazam">Enable Shazam Redirection</string>
+    <string name="pref_enable_shazam_summary">Redirect Shazam links to preferred platform</string>
+    
+    <!-- First Run Dialog -->
+    <string name="first_run_title">Welcome to Music Redirector</string>
+    <string name="first_run_message">This app helps you redirect music links from one platform to another.\n\nTo use it, you need to set it as the default handler for supported music links. When you click on a music link, you\'ll be asked which app to open it with. Choose \"Music Redirector\" and select \"Always\" to make it your default handler.</string>
+    <string name="first_run_button">Got it</string>
+    
+    <!-- Error Messages -->
+    <string name="error_extracting_info">Could not extract song information</string>
+    <string name="error_redirection_failed">Redirection failed</string>
+    <string name="error_opening_url">Could not open URL</string>
+    
+    <!-- Platform Names -->
+    <string name="platform_spotify">Spotify</string>
+    <string name="platform_youtube_music">YouTube Music</string>
+</resources> 

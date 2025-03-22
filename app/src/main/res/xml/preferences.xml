@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        android:title="@string/pref_category_redirections"
+        app:iconSpaceReserved="false">
+
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="enable_all"
+            android:summary="@string/pref_enable_all_summary"
+            android:title="@string/pref_enable_all"
+            app:iconSpaceReserved="false" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/pref_category_platforms"
+        app:iconSpaceReserved="false">
+
+        <ListPreference
+            android:defaultValue="spotify"
+            android:entries="@array/preferred_platform_entries"
+            android:entryValues="@array/preferred_platform_values"
+            android:key="preferred_platform"
+            android:summary="@string/pref_preferred_platform_summary"
+            android:title="@string/pref_preferred_platform"
+            app:iconSpaceReserved="false" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/pref_category_source_platforms"
+        app:iconSpaceReserved="false">
+
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="enable_spotify"
+            android:summary="@string/pref_enable_spotify_summary"
+            android:title="@string/pref_enable_spotify"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="enable_youtube_music"
+            android:summary="@string/pref_enable_youtube_music_summary"
+            android:title="@string/pref_enable_youtube_music"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="enable_shazam"
+            android:summary="@string/pref_enable_shazam_summary"
+            android:title="@string/pref_enable_shazam"
+            app:iconSpaceReserved="false" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen> 
