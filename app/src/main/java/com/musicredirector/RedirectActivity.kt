@@ -248,21 +248,57 @@ class RedirectActivity : AppCompatActivity() {
                     else if (targetPlatform == PreferencesHelper.PLATFORM_SPOTIFY) {
                         // Handle Spotify redirection
                         try {
-                            val spotifyIntent = Intent(Intent.ACTION_VIEW, Uri.parse(searchUrl))
-                            spotifyIntent.setPackage("com.spotify.music")
+                            // Get clean search query
+                            val cleanedTitle = songInfo.title.trim()
+                            val cleanedArtist = songInfo.artist.trim()
+                            val searchQuery = "$cleanedTitle $cleanedArtist"
+                            val encodedQuery = URLEncoder.encode(searchQuery, "UTF-8")
                             
-                            // Check if the Spotify app is installed
-                            if (spotifyIntent.resolveActivity(packageManager) != null) {
-                                Log.d(TAG, "Launching Spotify app")
-                                startActivity(spotifyIntent)
-                                finish()
-                                return@launch
-                            } else {
-                                Log.d(TAG, "Spotify app not found, trying web URL")
-                                // Fallback to web URL
-                                val webUrl = "https://open.spotify.com/search/${Uri.encode("${songInfo.title} ${songInfo.artist}".trim())}"
-                                openUrl(webUrl)
+                            // Spotify URL - using deep link format
+                            val spotifyURL = "spotify://search/$encodedQuery"
+                            
+                            Log.d(TAG, "Redirecting to Spotify. Song: '$cleanedTitle', Artist: '$cleanedArtist'")
+                            Log.d(TAG, "Spotify URL: $spotifyURL")
+                            
+                            // Save search terms to clipboard for easy manual search if needed
+                            val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+                            val clip = ClipData.newPlainText("Song Search", searchQuery)
+                            clipboard.setPrimaryClip(clip)
+                            
+                            // Show helpful toast
+                            Toast.makeText(this@RedirectActivity,
+                                "Opening Spotify. Search terms copied to clipboard.",
+                                Toast.LENGTH_LONG).show()
+                            
+                            // Try to open Spotify app first
+                            val spotifyIntent = Intent(Intent.ACTION_VIEW, Uri.parse(spotifyURL)).apply {
+                                setPackage("com.spotify.music")
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
                             }
+                            
+                            Log.d(TAG, "Checking if Spotify can handle deep link")
+                            val spotifyResolveInfo = spotifyIntent.resolveActivity(packageManager)
+                            if (spotifyResolveInfo != null) {
+                                Log.d(TAG, "Spotify found, launching with deep link")
+                                try {
+                                    startActivity(spotifyIntent)
+                                    Log.d(TAG, "Successfully launched Spotify with deep link")
+                                    finish()
+                                    return@launch
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Failed to launch Spotify with deep link: ${e.message}")
+                                    e.printStackTrace()
+                                }
+                            } else {
+                                Log.d(TAG, "Spotify cannot handle deep link")
+                            }
+                            
+                            // Fallback to web browser with search URL
+                            val webSpotifyURL = "https://open.spotify.com/search/$encodedQuery"
+                            Log.d(TAG, "Falling back to browser launch with web URL: $webSpotifyURL")
+                            val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(webSpotifyURL))
+                            startActivity(browserIntent)
+                            finish()
                         } catch (e: Exception) {
                             Log.e(TAG, "Error opening Spotify: ${e.message}")
                             showErrorAndExit("Error opening Spotify app.")
