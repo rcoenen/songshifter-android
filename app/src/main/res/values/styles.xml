@@ -68,7 +68,7 @@
         <item name="actionBarStyle">@style/ActionBarStyle</item>
     </style>
 
-    <style name="ActionBarStyle" parent="Widget.MaterialComponents.Light.ActionBar.Primary">
+    <style name="ActionBarStyle" parent="Widget.MaterialComponents.Light.ActionBar">
         <item name="android:background">@color/surface</item>
         <item name="background">@color/surface</item>
         <item name="android:elevation">4dp</item>
