@@ -21,8 +21,8 @@
 
         <ListPreference
             android:defaultValue="spotify"
-            android:entries="@array/preferred_platform_entries"
-            android:entryValues="@array/preferred_platform_values"
+            android:entries="@array/platform_options"
+            android:entryValues="@array/platform_values"
             android:key="preferred_platform"
             android:summary="@string/pref_preferred_platform_summary"
             android:title="@string/pref_preferred_platform"

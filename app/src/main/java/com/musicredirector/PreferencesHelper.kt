@@ -32,7 +32,11 @@ class PreferencesHelper(context: Context) {
     }
     
     fun getPreferredPlatform(): String {
-        return prefs.getString(KEY_PREFERRED_PLATFORM, PLATFORM_SPOTIFY) ?: PLATFORM_SPOTIFY
+        return prefs.getString(KEY_PREFERRED_PLATFORM, PLATFORM_YOUTUBE_MUSIC) ?: PLATFORM_YOUTUBE_MUSIC
+    }
+    
+    fun setPreferredPlatform(platform: String) {
+        prefs.edit().putString(KEY_PREFERRED_PLATFORM, platform).apply()
     }
     
     fun isSpotifyRedirectionEnabled(): Boolean {
@@ -40,7 +44,11 @@ class PreferencesHelper(context: Context) {
     }
     
     fun isYouTubeMusicRedirectionEnabled(): Boolean {
-        return prefs.getBoolean(KEY_ENABLE_YOUTUBE_MUSIC, true)
+        return if (getPreferredPlatform() == PLATFORM_SPOTIFY) {
+            prefs.getBoolean(KEY_ENABLE_YOUTUBE_MUSIC, false)
+        } else {
+            prefs.getBoolean(KEY_ENABLE_YOUTUBE_MUSIC, true)
+        }
     }
     
     fun isShazamRedirectionEnabled(): Boolean {
