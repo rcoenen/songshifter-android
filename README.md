@@ -1,41 +1,56 @@
-# Music Redirector Android App
+# Binus Music Redirector
 
-Music Redirector is a lightweight Android application that intercepts music streaming links and redirects them to your preferred platform.
+Android app that redirects music links between platforms based on your preference.
 
-## Features
+## Status (v1.1.0 - Build 145)
 
-- Intercept links from Spotify, YouTube Music, and Shazam
-- Extract song title and artist information from the intercepted links
-- Redirect to your preferred music platform (Spotify or YouTube Music)
-- Customizable settings to control redirection behavior
-- Material Design UI following modern Android development practices
+### Working Features
+- ✅ Spotify to YouTube Music redirection (fully tested and stable)
+- ✅ Shazam link interception (implemented but needs more testing)
+- ✅ Clean and intuitive UI with platform selection
+- ✅ Warning banner when YouTube Music needs to be running
+- ✅ Test functionality for verifying redirections
 
-## How It Works
+### Limited Testing
+- ⚠️ YouTube Music to Spotify redirection (when Spotify is preferred platform)
+- ⚠️ Shazam link processing and redirection
+- ⚠️ Edge cases with various link formats
 
-1. When a supported music link is clicked (Spotify, YouTube Music, or Shazam), the app intercepts it
-2. The app extracts the song information from the link
-3. Based on your preferences, it redirects to your preferred music platform with a search query for the song
-4. If extraction fails, it falls back to opening the original link
+### Known Requirements
+- YouTube Music must be running in the background for YouTube Music redirections to work
+- App needs permission to handle links (can be configured in system settings)
+- Android 7.0 (API 24) or higher required
 
-## Setup
+## Usage
 
-1. Install the app
-2. On first launch, the app will show you how to set it as the default handler for music links
-3. Configure your preferred platform and redirection settings in the app's settings screen
+1. Select your preferred platform (YouTube Music or Spotify)
+2. Enable link handling in system settings (tap the status banner)
+3. Share music links from supported platforms to test redirection
 
-## Technical Details
+## Development Status
 
-- Developed in Kotlin
-- Uses modern Android architecture components (ViewModel, LiveData)
-- Uses JSoup library for HTML parsing
-- Follows Material Design guidelines
+Current build: 145
+Version: 1.1.0
 
-## Requirements
+### Recent Updates
+- Improved UI with cleaner layout and better warning visibility
+- Robust song information extraction using embed pages
+- Stable link interception and redirection system
+- Added test functionality for verifying redirections
 
-- Android 7.0 (API level 24) or higher
+### Next Steps
+- More extensive testing of YouTube Music to Spotify redirection
+- Additional testing of Shazam link handling
+- Edge case testing with various link formats
+- User feedback collection and bug fixes
 
-## Building from Source
+## Contributing
 
-1. Clone the repository
-2. Open the project in Android Studio
-3. Build and run the app 
+Please report any issues or unexpected behavior when:
+- Using YouTube Music to Spotify redirection
+- Sharing Shazam links
+- Using different link formats
+
+## License
+
+[Insert License Information] 
