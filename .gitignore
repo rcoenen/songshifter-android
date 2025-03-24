@@ -12,4 +12,7 @@ app/build/
 *.apk
 *.aab
 *.ap_
-*.dex 
+*.dex
+# Build number files
+app/build_number.txt
+app/build_number.lock 

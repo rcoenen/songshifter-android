@@ -25,11 +25,16 @@
     <string name="first_run_button">Got it</string>
     
     <!-- Error Messages -->
-    <string name="error_extracting_info">Could not extract song information</string>
+    <string name="error_extracting_info">Could not extract song information from the URL</string>
+    <string name="error_processing_url">Error processing URL</string>
     <string name="error_redirection_failed">Redirection failed</string>
     <string name="error_opening_url">Could not open URL</string>
     
     <!-- Platform Names -->
     <string name="platform_spotify">Spotify</string>
     <string name="platform_youtube_music">YouTube Music</string>
+    
+    <!-- Warning Messages -->
+    <string name="warning_youtube_music_background">Note: YouTube Music must be running in the background for this to work.</string>
+    <string name="warning_link_interception">⚠️ Link interception not active. Click to configure.</string>
 </resources> 

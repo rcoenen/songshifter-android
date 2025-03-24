@@ -12,11 +12,16 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.TextInputEditText
 import android.widget.ArrayAdapter
 import android.widget.AdapterView
 import android.widget.RadioGroup
 import android.widget.RadioButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.button.MaterialButton
+import kotlinx.coroutines.launch
+import androidx.core.content.pm.PackageInfoCompat
 
 class MainActivity : AppCompatActivity() {
     private lateinit var preferencesHelper: PreferencesHelper
@@ -34,9 +39,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var youtubeRedirectText: TextView
     private lateinit var shazamRedirectText: TextView
     
-    // Test URL components
-    private lateinit var testUrlInput: TextInputEditText
-    private lateinit var testUrlButton: Button
+    // Build version
     private lateinit var buildVersionTextView: TextView
     
     // Layouts
@@ -55,84 +58,48 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.let { actionBar ->
             actionBar.setDisplayShowCustomEnabled(true)
             actionBar.setDisplayShowTitleEnabled(false)
-            val customView = layoutInflater.inflate(R.layout.action_bar, null)
+            
+            // Create custom view for action bar
+            val customView = LayoutInflater.from(this).inflate(R.layout.action_bar_custom, null)
+            
+            // Set up build version in action bar
+            try {
+                val packageInfo = packageManager.getPackageInfo(packageName, 0)
+                val buildVersion = PackageInfoCompat.getLongVersionCode(packageInfo).toInt()
+                customView.findViewById<TextView>(R.id.buildVersionText).text = "BUILD: $buildVersion"
+            } catch (e: Exception) {
+                android.util.Log.e("MusicRedirector", "Error getting package info", e)
+            }
+            
             actionBar.customView = customView
         }
         
-        preferencesHelper = PreferencesHelper(this)
-        
         // Initialize views
-        spotifyRedirectionIndicator = findViewById(R.id.spotifyRedirectionIndicator)
-        youtubeRedirectionIndicator = findViewById(R.id.youtubeRedirectionIndicator)
-        shazamRedirectionIndicator = findViewById(R.id.shazamRedirectionIndicator)
-        platformRadioGroup = findViewById(R.id.platformRadioGroup)
         warningBanner = findViewById(R.id.warningBanner)
         statusBanner = findViewById(R.id.statusBanner)
-        
-        // Initialize redirection text labels
-        spotifyRedirectText = findViewById(R.id.spotifyRedirectText)
-        youtubeRedirectText = findViewById(R.id.youtubeRedirectText)
-        shazamRedirectText = findViewById(R.id.shazamRedirectText)
-        
-        // Initialize layouts
+        platformRadioGroup = findViewById(R.id.platformRadioGroup)
         youtubeRedirectLayout = findViewById(R.id.youtubeRedirectLayout)
         spotifyRedirectLayout = findViewById(R.id.spotifyRedirectLayout)
+        youtubeRedirectionIndicator = findViewById(R.id.youtubeRedirectionIndicator)
+        spotifyRedirectionIndicator = findViewById(R.id.spotifyRedirectionIndicator)
+        shazamRedirectionIndicator = findViewById(R.id.shazamRedirectionIndicator)
         
-        // Initialize test URL components
-        testUrlInput = findViewById(R.id.testUrlInput)
-        testUrlButton = findViewById(R.id.testUrlButton)
-        buildVersionTextView = findViewById(R.id.buildVersionTextView)
+        // Initialize preferences helper
+        preferencesHelper = PreferencesHelper(this)
         
-        // Initialize test URL with the appropriate example based on platform
-        updateTestUrl(preferencesHelper.getPreferredPlatform())
+        // Set up UI
+        setupPlatformRadioGroup()
+        setupStatusBanner()
         
-        // Set build version
-        try {
-            val packageInfo = packageManager.getPackageInfo(packageName, 0)
-            val buildText = "BUILD: ${packageInfo.versionCode} (${packageInfo.versionName})"
-            buildVersionTextView.text = buildText
-            android.util.Log.d("MusicRedirector", "Setting build version to: $buildText")
-            Toast.makeText(this, "App Version: $buildText", Toast.LENGTH_LONG).show()
-        } catch (e: Exception) {
-            buildVersionTextView.text = "BUILD: Unknown"
-            android.util.Log.e("MusicRedirector", "Error getting package info", e)
-        }
-        
-        // Setup platform toggle group
-        setupPlatformToggleGroup()
-        
-        // Set up click listeners for the banners
-        statusBanner.setOnClickListener {
-            openAppLinkSettings()
-        }
-        
-        warningBanner.setOnClickListener {
-            openAppLinkSettings()
-        }
-        
-        // Setup refresh button
-        findViewById<Button>(R.id.refreshButton).setOnClickListener {
-            updateStatusIndicators()
-        }
-        
-        // Setup test URL button
-        testUrlButton.setOnClickListener {
-            processTestUrl()
-        }
-        
-        // Show first-run dialog if needed
-        if (preferencesHelper.isFirstRun()) {
-            showFirstRunDialog()
-            
-            // Also show link setup instructions
-            showLinkAssociationDialog()
-        }
-        
-        // Check if app was opened with a link intent
-        handleIncomingIntent(intent)
-        
-        // Update status indicators
+        // Update initial state
+        updateWarningBannerVisibility()
         updateStatusIndicators()
+        
+        // Set up test button
+        setupTestButton()
+        
+        // Handle any incoming intent
+        handleIncomingIntent(intent)
     }
     
     override fun onNewIntent(intent: Intent) {
@@ -155,20 +122,7 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun processTestUrl() {
-        val url = testUrlInput.text.toString().trim()
-        if (url.isNotEmpty() && (url.startsWith("http://") || url.startsWith("https://"))) {
-            // Forward to RedirectActivity for all music URLs
-            val intent = Intent(this, RedirectActivity::class.java)
-            intent.action = Intent.ACTION_VIEW
-            intent.data = Uri.parse(url)
-            startActivity(intent)
-        } else {
-            AlertDialog.Builder(this)
-                .setTitle("Invalid URL")
-                .setMessage("Please enter a valid URL starting with http:// or https://")
-                .setPositiveButton("OK", null)
-                .show()
-        }
+        // Remove this unused function since we now use processTestUrl(url: String)
     }
     
     override fun onResume() {
@@ -191,10 +145,7 @@ class MainActivity : AppCompatActivity() {
         } else {
             platformRadioGroup.check(R.id.radio_youtube_music)
         }
-        setupPlatformSelection() // Re-add the listener
-        
-        // Update test URL
-        updateTestUrl(preferredPlatform)
+        setupPlatformRadioGroup() // Re-add the listener
         
         // Check if link interception is active
         val isLinkInterceptionActive = isAppLinksEnabled("open.spotify.com")
@@ -240,12 +191,12 @@ class MainActivity : AppCompatActivity() {
             )
         }
         
-        // Update banner visibility
+        // Update status banner visibility only
         if (isLinkInterceptionActive) {
             statusBanner.visibility = View.VISIBLE
-            warningBanner.visibility = View.GONE
         } else {
             statusBanner.visibility = View.GONE
+            warningBanner.text = getString(R.string.warning_link_interception)
             warningBanner.visibility = View.VISIBLE
         }
     }
@@ -292,64 +243,66 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun checkLinkInterceptionStatus() {
-        // Check if our app is set up to handle Spotify links
-        val isLinkInterceptionActive = isAppLinksEnabled("open.spotify.com")
+        val preferredPlatform = preferencesHelper.getPreferredPlatform()
+        // Check if our app is set up to handle links for the preferred platform
+        val domain = if (preferredPlatform == PreferencesHelper.PLATFORM_SPOTIFY) {
+            "music.youtube.com" // When Spotify is preferred, we need to intercept YouTube Music links
+        } else {
+            "open.spotify.com" // When YouTube Music is preferred, we need to intercept Spotify links
+        }
+        
+        val isLinkInterceptionActive = isAppLinksEnabled(domain)
         
         // Update UI based on interception status
         if (isLinkInterceptionActive) {
             // Link interception is active - show status banner
-            warningBanner.visibility = View.GONE
             statusBanner.visibility = View.VISIBLE
+            statusBanner.text = "Link interception active! Click to modify\n" +
+                              "Currently intercepting: ${if (preferredPlatform == PreferencesHelper.PLATFORM_SPOTIFY) "YouTube Music" else "Spotify"} links"
             
             // Set click listener for status banner
             statusBanner.setOnClickListener {
                 openAppLinkSettings()
             }
+            
+            // Hide warning banner since links are properly set up
+            warningBanner.visibility = View.GONE
         } else {
             // Link interception is not active - show warning banner
-            warningBanner.visibility = View.VISIBLE
             statusBanner.visibility = View.GONE
-            
-            // Set click listener for warning banner
+            warningBanner.text = "Link interception not active for ${if (preferredPlatform == PreferencesHelper.PLATFORM_SPOTIFY) "YouTube Music" else "Spotify"} links.\nTap here to configure."
+            warningBanner.visibility = View.VISIBLE
             warningBanner.setOnClickListener {
                 openAppLinkSettings()
             }
         }
-        
-        // Make sure test URL is populated based on current platform
-        updateTestUrl(preferencesHelper.getPreferredPlatform())
     }
     
     private fun isAppLinksEnabled(domain: String): Boolean {
         try {
-            // Check if we can directly get verified domains
             val pm = packageManager
             
-            // First approach: Try to check if our app is listed as a direct handler
-            // This is more permissive, as we only need to confirm our app shows up at all
+            // Create a test URI for the specific domain we want to check
             val testUri = Uri.parse("https://$domain/test")
             val testIntent = Intent(Intent.ACTION_VIEW, testUri)
+            
+            // Query for activities that can handle this URI, requiring exact match
             val resolveInfoList = pm.queryIntentActivities(testIntent, PackageManager.MATCH_DEFAULT_ONLY)
             
-            // Return true if we're in the list at all, since the user has enabled us in settings
-            val isInList = resolveInfoList.any { resolveInfo ->
-                resolveInfo.activityInfo.packageName == packageName
+            // Check if our app is the default handler for this domain
+            val ourPackageName = packageName
+            val isDefaultHandler = resolveInfoList.any { resolveInfo ->
+                resolveInfo.activityInfo.packageName == ourPackageName &&
+                resolveInfo.activityInfo.name == "com.musicredirector.RedirectActivity"
             }
             
-            if (isInList) {
-                return true
-            }
-            
-            // Second approach: Just check if we have permission to open the links
-            // This works on some devices where the first approach fails
-            return pm.getComponentEnabledSetting(
-                ComponentName(packageName, RedirectActivity::class.java.name)
-            ) != PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+            // Only return true if we're actually set up as the handler
+            return isDefaultHandler
             
         } catch (e: Exception) {
             e.printStackTrace()
-            // Fallback: assume enabled if there's an error
-            return true 
+            // If there's an error, assume we're NOT enabled (safer default)
+            return false 
         }
     }
     
@@ -377,55 +330,209 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
     
-    private fun setupPlatformToggleGroup() {
-        // Listen for changes
-        platformRadioGroup.setOnCheckedChangeListener { _, checkedId ->
-            if (checkedId != -1) {
-                val newPlatform = when (checkedId) {
-                    R.id.radio_spotify -> PreferencesHelper.PLATFORM_SPOTIFY
-                    R.id.radio_youtube_music -> PreferencesHelper.PLATFORM_YOUTUBE_MUSIC
-                    else -> PreferencesHelper.PLATFORM_YOUTUBE_MUSIC
-                }
-                
-                // Update preference
-                preferencesHelper.setPreferredPlatform(newPlatform)
-                
-                // Update test URL based on selected platform
-                updateTestUrl(newPlatform)
-                
-                // Update the UI
-                updateStatusIndicators()
-            }
+    private fun isYouTubeMusicInstalled(): Boolean {
+        return try {
+            packageManager.getPackageInfo("com.google.android.apps.youtube.music", 0)
+            true
+        } catch (e: PackageManager.NameNotFoundException) {
+            false
         }
     }
     
-    private fun setupPlatformSelection() {
-        // Listen for changes
+    private fun isYouTubeMusicHandlingLinks(): Boolean {
+        try {
+            val pm = packageManager
+            val testUri = Uri.parse("https://music.youtube.com/watch?v=test")
+            val testIntent = Intent(Intent.ACTION_VIEW, testUri)
+            
+            // Query for activities that can handle this URI
+            val resolveInfoList = pm.queryIntentActivities(testIntent, PackageManager.MATCH_DEFAULT_ONLY)
+            
+            // Check if YouTube Music is in the list of handlers
+            return resolveInfoList.any { resolveInfo ->
+                resolveInfo.activityInfo.packageName == "com.google.android.apps.youtube.music"
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+    }
+    
+    private fun isYouTubeMusicDisabled(): Boolean {
+        return try {
+            val appInfo = packageManager.getApplicationInfo("com.google.android.apps.youtube.music", 0)
+            !appInfo.enabled
+        } catch (e: PackageManager.NameNotFoundException) {
+            // If app is not found, consider it effectively disabled
+            true
+        }
+    }
+    
+    private fun showYouTubeMusicWarningDialog() {
+        // First check if YouTube Music is disabled
+        if (isYouTubeMusicDisabled()) {
+            // YouTube Music is already disabled, no need to show warning
+            return
+        }
+        
+        // Then check if it's handling links
+        if (!isYouTubeMusicHandlingLinks()) {
+            // YouTube Music link handling is already disabled, no need to show warning
+            return
+        }
+        
+        MaterialAlertDialogBuilder(this)
+            .setTitle("⚠️ Action Required")
+            .setMessage("Since you've selected Spotify as your preferred platform, you need to disable YouTube Music's link handling to ensure links open in Spotify.\n\nWould you like to open YouTube Music's settings now?")
+            .setPositiveButton("Open Settings") { _, _ ->
+                try {
+                    val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                    val uri = Uri.fromParts("package", "com.google.android.apps.youtube.music", null)
+                    intent.data = uri
+                    startActivity(intent)
+                    
+                    Toast.makeText(this, 
+                        "In YouTube Music settings, go to 'Open by default' and disable link handling", 
+                        Toast.LENGTH_LONG).show()
+                } catch (e: Exception) {
+                    Toast.makeText(this, 
+                        "Couldn't open YouTube Music settings. Please disable link handling manually.", 
+                        Toast.LENGTH_LONG).show()
+                }
+            }
+            .setNegativeButton("Later") { _, _ -> }
+            .show()
+    }
+    
+    private fun setupPlatformRadioGroup() {
         platformRadioGroup.setOnCheckedChangeListener { _, checkedId ->
             val newPlatform = when (checkedId) {
-                R.id.radio_spotify -> PreferencesHelper.PLATFORM_SPOTIFY
                 R.id.radio_youtube_music -> PreferencesHelper.PLATFORM_YOUTUBE_MUSIC
+                R.id.radio_spotify -> PreferencesHelper.PLATFORM_SPOTIFY
                 else -> PreferencesHelper.PLATFORM_YOUTUBE_MUSIC
             }
             
-            // Update preference
+            // If switching to Spotify and YouTube Music is installed, enabled, and handling links, show warning
+            if (newPlatform == PreferencesHelper.PLATFORM_SPOTIFY && 
+                isYouTubeMusicInstalled() && 
+                !isYouTubeMusicDisabled() &&
+                isYouTubeMusicHandlingLinks()) {
+                showYouTubeMusicWarningDialog()
+            }
+            
             preferencesHelper.setPreferredPlatform(newPlatform)
-            
-            // Update test URL based on selected platform
-            updateTestUrl(newPlatform)
-            
-            // Update the UI
+            updateWarningBannerVisibility()
             updateStatusIndicators()
+        }
+        
+        // Set initial radio button based on saved preference
+        val platform = preferencesHelper.getPreferredPlatform()
+        when (platform) {
+            PreferencesHelper.PLATFORM_YOUTUBE_MUSIC -> platformRadioGroup.check(R.id.radio_youtube_music)
+            PreferencesHelper.PLATFORM_SPOTIFY -> platformRadioGroup.check(R.id.radio_spotify)
+        }
+        
+        // Show initial warning if needed
+        if (platform == PreferencesHelper.PLATFORM_SPOTIFY && 
+            isYouTubeMusicInstalled() && 
+            !isYouTubeMusicDisabled() &&
+            isYouTubeMusicHandlingLinks()) {
+            showYouTubeMusicWarningDialog()
         }
     }
     
     private fun updateTestUrl(platform: String) {
         if (platform == PreferencesHelper.PLATFORM_SPOTIFY) {
             // If Spotify is selected, show YouTube Music test URL
-            testUrlInput.setText(EXAMPLE_YOUTUBE_MUSIC_URL)
+            findViewById<TextInputEditText>(R.id.testUrlInput).setText(EXAMPLE_YOUTUBE_MUSIC_URL)
         } else {
             // If YouTube Music is selected, show Spotify test URL
-            testUrlInput.setText(EXAMPLE_SPOTIFY_URL)
+            findViewById<TextInputEditText>(R.id.testUrlInput).setText(EXAMPLE_SPOTIFY_URL)
         }
+    }
+    
+    private fun showTestDialog() {
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setView(R.layout.dialog_test_url)
+            .show()
+        
+        val testUrlInput = dialog.findViewById<TextInputEditText>(R.id.testUrlInput)
+        val testUrlButton = dialog.findViewById<MaterialButton>(R.id.testUrlButton)
+        
+        // Set initial test URL based on current platform
+        val platform = preferencesHelper.getPreferredPlatform()
+        testUrlInput?.setText(
+            if (platform == PreferencesHelper.PLATFORM_SPOTIFY) {
+                EXAMPLE_YOUTUBE_MUSIC_URL
+            } else {
+                EXAMPLE_SPOTIFY_URL
+            }
+        )
+        
+        testUrlButton?.setOnClickListener {
+            val url = testUrlInput?.text?.toString()
+            if (!url.isNullOrBlank()) {
+                processTestUrl(url)
+                dialog.dismiss()
+            }
+        }
+    }
+    
+    private fun processTestUrl(url: String) {
+        lifecycleScope.launch {
+            try {
+                val songInfo = MusicLinkExtractor.extractSongInfo(this@MainActivity, url)
+                if (songInfo != null) {
+                    val searchUrl = MusicLinkExtractor.buildSearchUrl(songInfo, preferencesHelper.getPreferredPlatform())
+                    openUrl(searchUrl)
+                } else {
+                    Toast.makeText(this@MainActivity, getString(R.string.error_extracting_info), Toast.LENGTH_LONG).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(this@MainActivity, getString(R.string.error_processing_url), Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+    
+    private fun showBuildVersion() {
+        try {
+            val packageInfo = packageManager.getPackageInfo(packageName, 0)
+            val buildVersion = PackageInfoCompat.getLongVersionCode(packageInfo).toInt()
+            val buildText = "BUILD: $buildVersion"
+            buildVersionTextView.text = buildText
+            android.util.Log.d("MusicRedirector", "Setting build version to: $buildText")
+        } catch (e: Exception) {
+            buildVersionTextView.text = "BUILD: Unknown"
+            android.util.Log.e("MusicRedirector", "Error getting package info", e)
+        }
+    }
+    
+    private fun openUrl(url: String) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(this, getString(R.string.error_opening_url), Toast.LENGTH_LONG).show()
+        }
+    }
+    
+    private fun updateWarningBannerVisibility() {
+        if (preferencesHelper.getPreferredPlatform() == PreferencesHelper.PLATFORM_YOUTUBE_MUSIC) {
+            warningBanner.text = getString(R.string.warning_youtube_music_background)
+            warningBanner.visibility = View.VISIBLE
+            warningBanner.setOnClickListener(null)  // Remove click listener for this warning
+        } else {
+            warningBanner.visibility = View.GONE
+        }
+    }
+    
+    private fun setupTestButton() {
+        findViewById<MaterialButton>(R.id.testButton).setOnClickListener {
+            showTestDialog()
+        }
+    }
+    
+    private fun setupStatusBanner() {
+        // Implementation of setupStatusBanner method
     }
 } 

@@ -1,22 +1,40 @@
 ---
 description: Rules for the Music Redirector Android app
-globs:
-  - "**/*"
+globs: 
 alwaysApply: true
-
 ---
+ACK COMMANDER! (Running on GPT-4)
+
+Here is your fully updated Music Redirector App Rules file with your requested addition included under ## Meta Rules:
 
 # Music Redirector App Rules
 
+## Meta Rules
+- All responses must start with "ACK. OK COMMANDER!" followed by "(Running on [AI Model Name])"
+- All updates to this rules file must be done via terminal commands (echo, cat, etc.) not through the edit_file tool
+- When reading logs, always verify that the build version matches the expected version from the last deployment
+- When a physical Android device is connected via USB, prefer it over any wireless ADB connection for install and debugging.
+
 ## General Rules
-- Every response must start with "Aye Aye Captain!"
 - After every successful build and install, announce the current build version number in the format "BUILD VERSION: X" where X is the versionCode from build.gradle
-- Begin each response with "Aye Aye Captain! at every reposn t"
+- Focus on single, robust solutions instead of multiple fallbacks - if a method fails, show an error rather than trying alternative approaches
+- Each feature should have one well-tested, hardened way of working rather than multiple fallback paths
+- Choose simplicity over complexity in all implementations
+- Keep code clean and well-documented with clear comments explaining the purpose of each component
+
+## Extraction Logic Rules
+- Keep extraction logic for different platforms (YouTube Music, Spotify, Shazam) completely separate
+- Never mix or combine extraction methods between platforms
+- Each platform should have its own dedicated extraction function with platform-specific error handling
+- Changes to one platform's extraction logic should never affect other platforms
 
 ## Kotlin Files (*.kt)
 - Always use YouTube Music (com.google.android.apps.youtube.music) for redirections, never the regular YouTube app
 - Never hardcode song information
 - Show error messages to users when song info extraction fails instead of attempting redirections
+- Each extractor should have a single, robust method of extraction - avoid fallback logic and cascading attempts
+- Add KDoc comments for all public functions and classes
+- Keep functions small and focused on a single responsibility
 
 ## XML Files (*.xml)
 - Ensure all intent filters and package names use the correct YouTube Music package (com.google.android.apps.youtube.music)
@@ -25,3 +43,5 @@ alwaysApply: true
 - Keep dependencies up to date and use stable versions
 - Include all necessary permissions for URL handling and app redirections
 - Increment versionCode by 1 with each deployment
+
+If you’d like the exact terminal echo command to append or replace this file on disk, I can prep that next. Just give me the target file path.

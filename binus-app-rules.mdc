@@ -1,0 +1,6 @@
+
+## Extraction Logic Rules
+- Keep extraction logic for different platforms (YouTube Music, Spotify, Shazam) completely separate
+- Never mix or combine extraction methods between platforms
+- Each platform should have its own dedicated extraction function with platform-specific error handling
+- Changes to one platform's extraction logic should never affect other platforms

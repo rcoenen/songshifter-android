@@ -17,6 +17,11 @@ class PreferencesHelper(context: Context) {
         
         const val PLATFORM_SPOTIFY = "spotify"
         const val PLATFORM_YOUTUBE_MUSIC = "youtube_music"
+        
+        private const val PREF_NAME = "MusicRedirectorPrefs"
+        private const val KEY_TARGET_PLATFORM = "target_platform"
+        const val TARGET_YOUTUBE_MUSIC = "YouTube Music"
+        const val TARGET_SPOTIFY = "Spotify"
     }
     
     fun isFirstRun(): Boolean {
@@ -67,5 +72,13 @@ class PreferencesHelper(context: Context) {
     
     fun shouldRedirectShazam(): Boolean {
         return isAllRedirectionsEnabled() && isShazamRedirectionEnabled()
+    }
+    
+    fun getTargetPlatform(): String {
+        return prefs.getString(KEY_TARGET_PLATFORM, TARGET_YOUTUBE_MUSIC) ?: TARGET_YOUTUBE_MUSIC
+    }
+    
+    fun setTargetPlatform(platform: String) {
+        prefs.edit().putString(KEY_TARGET_PLATFORM, platform).apply()
     }
 } 

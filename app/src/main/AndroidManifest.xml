@@ -2,6 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+    <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS" />
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
+    <uses-permission android:name="android.permission.MEDIA_CONTENT_CONTROL" />
 
     <application
         android:allowBackup="true"
@@ -30,50 +35,45 @@
             android:theme="@style/Theme.Transparent">
             
             <!-- Spotify Links - Main Handler -->
-            <intent-filter android:priority="999">
+            <intent-filter android:priority="9999" android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" />
-                <data android:host="open.spotify.com" />
-                <data android:pathPrefix="/track" />
+                <data android:scheme="https" android:host="open.spotify.com" />
             </intent-filter>
 
             <!-- Spotify Links - Alternative Format -->
-            <intent-filter android:priority="999">
+            <intent-filter android:priority="9999" android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="http" />
-                <data android:host="open.spotify.com" />
-                <data android:pathPrefix="/track" />
+                <data android:scheme="http" android:host="open.spotify.com" />
             </intent-filter>
             
             <!-- Spotify Share Handler - Complete URL pattern -->
-            <intent-filter android:priority="999">
+            <intent-filter android:priority="9999" android:autoVerify="true">
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
             </intent-filter>
             
             <!-- Additional Generic Text Share Handler -->
-            <intent-filter android:priority="999">
+            <intent-filter android:priority="9999">
                 <action android:name="android.intent.action.PROCESS_TEXT" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
             </intent-filter>
             
             <!-- Spotify App URI Handler -->
-            <intent-filter android:priority="999">
+            <intent-filter android:priority="9999">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="spotify" />
-                <data android:host="track" />
             </intent-filter>
             
             <!-- YouTube Music Link Handler -->
-            <intent-filter android:priority="999">
+            <intent-filter android:priority="9999">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />

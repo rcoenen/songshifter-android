@@ -1,6 +1,48 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.9.22'
+}
+
+def getBuildNumber() {
+    def buildNumberFile = new File(projectDir, 'build_number.txt')
+    def buildNumber = 130  // Set minimum build number to current value
+    
+    // Create build number file if it doesn't exist
+    if (!buildNumberFile.exists()) {
+        buildNumberFile.createNewFile()
+        buildNumberFile.text = buildNumber.toString()
+        println "Created new build_number.txt with initial value: $buildNumber"
+        return buildNumber
+    }
+    
+    // Read and validate current build number
+    try {
+        def currentNumber = buildNumberFile.text.trim()
+        if (currentNumber.matches("\\d+")) {  // Verify it's a valid number
+            buildNumber = Integer.parseInt(currentNumber)
+            // Ensure we never go backwards
+            buildNumber = Math.max(buildNumber, 130)
+            buildNumber++
+        } else {
+            println "Warning: Invalid build number format in build_number.txt. Resetting to $buildNumber"
+        }
+    } catch (Exception e) {
+        println "Warning: Error reading build_number.txt. Using default value: $buildNumber"
+        println "Error details: ${e.message}"
+    }
+    
+    // Write new build number with file lock to prevent race conditions
+    def lockFile = new File(projectDir, 'build_number.lock')
+    try {
+        lockFile.createNewFile()
+        buildNumberFile.text = buildNumber.toString()
+        println "Updated build number to: $buildNumber"
+    } finally {
+        lockFile.delete()
+    }
+    
+    return buildNumber
 }
 
 android {
@@ -10,8 +52,12 @@ android {
         applicationId "com.musicredirector"
         minSdkVersion 24
         targetSdkVersion 34
-        versionCode 2
-        versionName "1.1"
+        
+        // Use single build number for both versionCode and versionName
+        def buildNumber = getBuildNumber()
+        versionCode buildNumber
+        versionName buildNumber.toString()
+        
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -33,18 +79,22 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:1.9.0'
+    implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0'
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.1'
     implementation 'androidx.navigation:navigation-fragment-ktx:2.5.3'
     implementation 'androidx.navigation:navigation-ui-ktx:2.5.3'
     implementation 'androidx.preference:preference-ktx:1.2.0'
-    implementation 'org.jsoup:jsoup:1.15.4'
+    implementation 'org.jsoup:jsoup:1.17.2'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2'
     
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'com.squareup.okhttp3:mockwebserver:4.12.0'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 } 
