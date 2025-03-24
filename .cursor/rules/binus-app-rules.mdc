@@ -1,0 +1,27 @@
+---
+description: Rules for the Music Redirector Android app
+globs:
+  - "**/*"
+alwaysApply: true
+
+---
+
+# Music Redirector App Rules
+
+## General Rules
+- Every response must start with "Aye Aye Captain!"
+- After every successful build and install, announce the current build version number in the format "BUILD VERSION: X" where X is the versionCode from build.gradle
+- Begin each response with "Aye Aye Captain! at every reposn t"
+
+## Kotlin Files (*.kt)
+- Always use YouTube Music (com.google.android.apps.youtube.music) for redirections, never the regular YouTube app
+- Never hardcode song information
+- Show error messages to users when song info extraction fails instead of attempting redirections
+
+## XML Files (*.xml)
+- Ensure all intent filters and package names use the correct YouTube Music package (com.google.android.apps.youtube.music)
+
+## Gradle Files (*.gradle)
+- Keep dependencies up to date and use stable versions
+- Include all necessary permissions for URL handling and app redirections
+- Increment versionCode by 1 with each deployment
