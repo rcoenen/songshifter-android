@@ -11,13 +11,29 @@ import java.net.URL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+/**
+ * Extracts song information from various music platform URLs.
+ * Each platform has a single, robust extraction method without fallbacks.
+ *
+ * Supported platforms:
+ * - Spotify (via oEmbed API)
+ * - YouTube Music (via WebView)
+ * - Shazam (via meta tags)
+ *
+ * @property context Android context required for WebView operations
+ */
 class MusicLinkExtractor(private val context: Context) {
     companion object {
         private const val TAG = "MusicLinkExtractor"
         private const val TIMEOUT_MS = 10000
         
         /**
-         * Extract song title and artist from various music platform links
+         * Extracts song title and artist from various music platform links.
+         * Uses platform-specific extractors based on the URL pattern.
+         *
+         * @param context Android context required for extraction
+         * @param url The music platform URL to extract from
+         * @return SongInfo if extraction succeeds, null otherwise
          */
         suspend fun extractSongInfo(context: Context, url: String): SongInfo? {
             val extractor = MusicLinkExtractor(context)
@@ -30,11 +46,21 @@ class MusicLinkExtractor(private val context: Context) {
         }
         
         /**
-         * Build a search URL for the target platform
+         * Builds a search URL for the target platform using song info.
+         *
+         * @param songInfo The song information to search for
+         * @param targetPlatform The platform to build the search URL for
+         * @return A search URL for the specified platform
          */
         fun buildSearchUrl(songInfo: SongInfo, targetPlatform: String): String {
-            val searchQuery = "${songInfo.title} ${songInfo.artist}".trim()
-            val encodedQuery = Uri.encode(searchQuery)
+            // If we have both title and artist, use them
+            val searchQuery = if (songInfo.artist.isNotBlank()) {
+                "${songInfo.title} ${songInfo.artist}"
+            } else {
+                // If we only have title, use it alone but add "song" to improve results
+                "${songInfo.title} song"
+            }
+            val encodedQuery = Uri.encode(searchQuery.trim())
             
             return when (targetPlatform) {
                 PreferencesHelper.PLATFORM_SPOTIFY -> "https://open.spotify.com/search/$encodedQuery"
@@ -44,157 +70,170 @@ class MusicLinkExtractor(private val context: Context) {
         }
     }
     
+    /**
+     * Extracts song information from a Spotify track URL using their embed page.
+     * This is the most reliable method as it:
+     * 1. Uses the public embed page which is designed for stability
+     * 2. Doesn't require API tokens or authentication
+     * 3. Has consistent HTML structure with h1 (title) and h2 (artist)
+     * 4. Runs network call on background thread to avoid ANR
+     *
+     * @param url The Spotify track URL
+     * @return SongInfo if extraction succeeds, null if any validation fails
+     */
     private suspend fun extractFromSpotify(url: String): SongInfo? {
-        Log.d(TAG, "Extracting from Spotify URL: $url")
+        Log.d(TAG, "=== Starting Spotify extraction ===")
+        Log.d(TAG, "Input URL: $url")
         
-        // Use Spotify's oEmbed endpoint which requires no auth
         try {
-            val oembedUrl = "https://open.spotify.com/oembed?url=$url"
-            
-            // Make a direct HTTP request to the oEmbed endpoint
-            val connection = URL(oembedUrl).openConnection()
-            connection.connectTimeout = TIMEOUT_MS
-            connection.readTimeout = TIMEOUT_MS
-            connection.setRequestProperty("User-Agent", "MusicRedirector Android App")
-            
-            // Read the response
-            val response = connection.getInputStream().bufferedReader().use { it.readText() }
-            Log.d(TAG, "Spotify oEmbed response: $response")
-            
-            // Parse JSON
-            val json = JSONObject(response)
-            val title = json.getString("title")
-            // Try to get artist from title if it contains " - "
-            val (songTitle, artist) = if (title.contains(" - ")) {
-                val parts = title.split(" - ")
-                parts[0].trim() to parts[1].trim()
-            } else {
-                title to ""
+            // Validate Spotify URL format
+            if (!url.contains("/track/")) {
+                Log.e(TAG, "Invalid Spotify URL format - must be a track URL")
+                return null
             }
             
-            Log.d(TAG, "Extracted from Spotify oEmbed - Title: \"$songTitle\", Artist: \"$artist\"")
-            return SongInfo(songTitle, artist)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error extracting Spotify info via oEmbed: ${e.message}")
-            e.printStackTrace()
+            // Get the track ID and create embed URL
+            val trackId = url.substringAfter("/track/").substringBefore("?")
+            val embedUrl = "https://open.spotify.com/embed/track/$trackId"
+            Log.d(TAG, "Requesting embed URL: $embedUrl")
             
-            // Try alternative method before giving up
-            return try {
-                // Fallback to Jsoup method
-                val doc = Jsoup.connect(url)
+            // Use Jsoup to parse the embed page (on background thread)
+            val doc = withContext(Dispatchers.IO) {
+                Jsoup.connect(embedUrl)
                     .timeout(TIMEOUT_MS)
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
-                    .header("Accept-Language", "en-US,en;q=0.9")
+                    .userAgent("Mozilla/5.0")
                     .get()
-                
-                val title = doc.title()
-                Log.d(TAG, "Spotify page title: $title")
-                
-                // Check if the title contains actual info (not "Unsupported browser")
-                if (title.contains("Unsupported browser") || title.isEmpty() || title == "Spotify") {
-                    Log.d(TAG, "Spotify page title extraction failed, got: $title")
-                    throw IOException("Invalid page title: $title")
-                }
-                
-                // Spotify page titles are formatted as "Song Name - Artist | Spotify"
-                val cleanedTitle = title.replace(" | Spotify", "").trim()
-                Log.d(TAG, "Extracted title: $cleanedTitle")
-                
-                SongInfo(cleanedTitle, "")
-            } catch (e2: Exception) {
-                Log.e(TAG, "All Spotify extraction methods failed: ${e2.message}")
-                e2.printStackTrace()
-                
-                // Final fallback: Try WebView extraction
-                try {
-                    Log.d(TAG, "Attempting WebView extraction on main thread")
-                    val webViewExtractor = WebViewExtractor(context)
-                    withContext(Dispatchers.Main) {
-                        webViewExtractor.extractFromSpotify(url)
-                    }
-                } catch (e3: Exception) {
-                    Log.e(TAG, "WebView extraction failed: ${e3.message}")
-                    e3.printStackTrace()
-                    null
-                }
             }
-        }
-    }
-    
-    private suspend fun extractFromYouTubeMusic(url: String): SongInfo? {
-        Log.d(TAG, "Extracting from YouTube Music URL: $url")
-        return try {
-            val doc = Jsoup.connect(url).timeout(TIMEOUT_MS).get()
-            val title = doc.title()
-            Log.d(TAG, "YouTube Music page title: $title")
             
-            // YouTube Music titles are typically "Song Name - Artist - YouTube Music"
-            val parts = title.split(" - ")
-            if (parts.size >= 3) {
-                val songTitle = parts[0].trim()
-                val artist = parts[1].trim()
-                Log.d(TAG, "Extracted from YouTube Music - Title: \"$songTitle\", Artist: \"$artist\"")
-                SongInfo(songTitle, artist)
-            } else if (parts.size == 2) {
-                val songTitle = parts[0].trim()
-                val artist = parts[1].replace("YouTube Music", "").trim()
-                Log.d(TAG, "Extracted from YouTube Music - Title: \"$songTitle\", Artist: \"$artist\"")
-                SongInfo(songTitle, artist)
-            } else {
-                // Fallback to just using the page title as query
-                Log.d(TAG, "Fallback - using full title: $title")
-                val cleanTitle = title.replace("- YouTube Music", "").trim()
-                SongInfo(cleanTitle, "")
+            // Extract title and artist from the page
+            val songTitle = doc.select("h1").firstOrNull()?.text()
+            val artist = doc.select("h2").firstOrNull()?.text()
+            
+            Log.d(TAG, "Extracted title: \"$songTitle\"")
+            Log.d(TAG, "Extracted artist: \"$artist\"")
+            
+            if (songTitle.isNullOrBlank() || artist.isNullOrBlank()) {
+                Log.e(TAG, "Invalid song info - title or artist is blank")
+                return null
             }
-        } catch (e: IOException) {
-            Log.e(TAG, "Error extracting YouTube Music info: ${e.message}")
+            
+            Log.d(TAG, "=== Extraction successful ===")
+            Log.d(TAG, "Song title: \"$songTitle\"")
+            Log.d(TAG, "Artist: \"$artist\"")
+            return SongInfo(songTitle, artist)
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "=== Extraction failed ===")
+            Log.e(TAG, "Error type: ${e.javaClass.simpleName}")
+            Log.e(TAG, "Error message: ${e.message}")
+            Log.e(TAG, "Stack trace:")
             e.printStackTrace()
-            null
+            return null
         }
     }
     
+    /**
+     * Extracts song information from a YouTube Music URL using WebView.
+     * This method is necessary because YouTube Music requires JavaScript execution.
+     *
+     * @param url The YouTube Music URL
+     * @return SongInfo if extraction succeeds, null if any validation fails
+     */
+    private suspend fun extractFromYouTubeMusic(url: String): SongInfo? {
+        Log.d(TAG, "=== Starting YouTube Music extraction ===")
+        Log.d(TAG, "Input URL: $url")
+        
+        try {
+            // Validate YouTube Music URL format
+            if (!url.contains("/watch")) {
+                Log.e(TAG, "Invalid YouTube Music URL format - must be a watch URL")
+                return null
+            }
+            
+            Log.d(TAG, "Using WebView extraction")
+            val webViewExtractor = WebViewExtractor(context)
+            val result = withContext(Dispatchers.Main) {
+                webViewExtractor.extractFromYouTubeMusic(url)
+            }
+            
+            if (result != null) {
+                Log.d(TAG, "=== Extraction successful ===")
+                Log.d(TAG, "Song title: \"${result.title}\"")
+                Log.d(TAG, "Artist: \"${result.artist}\"")
+                return result
+            }
+            
+            Log.e(TAG, "WebView extraction failed to extract song info")
+            return null
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "=== Extraction failed ===")
+            Log.e(TAG, "Error type: ${e.javaClass.simpleName}")
+            Log.e(TAG, "Error message: ${e.message}")
+            Log.e(TAG, "Stack trace:")
+            e.printStackTrace()
+            return null
+        }
+    }
+    
+    /**
+     * Extracts song information from a Shazam URL using meta tags.
+     * Uses og:title meta tag as the most reliable source of information.
+     *
+     * @param url The Shazam song URL
+     * @return SongInfo if extraction succeeds, null if any validation fails
+     */
     private suspend fun extractFromShazam(url: String): SongInfo? {
-        Log.d(TAG, "Extracting from Shazam URL: $url")
+        Log.d(TAG, "=== Starting Shazam extraction ===")
+        Log.d(TAG, "Input URL: $url")
+        
         return try {
-            val doc = Jsoup.connect(url).timeout(TIMEOUT_MS).get()
-            
-            // Try multiple approaches to extract song info, similar to the Chrome extension
-            var title = ""
-            var artist = ""
-            
-            // Approach 1: Look for specific heading elements
-            title = doc.select("h1").firstOrNull()?.text() ?: ""
-            artist = doc.select("h2 a").firstOrNull()?.text() ?: ""
-            
-            Log.d(TAG, "Shazam extraction approach 1 - Title: \"$title\", Artist: \"$artist\"")
-            
-            // Approach 2: Try to extract from meta tags
-            if (title.isEmpty() || artist.isEmpty()) {
-                val metaTitle = doc.select("meta[property=og:title]").attr("content")
-                if (metaTitle.contains(" - ")) {
-                    val parts = metaTitle.split(" - ")
-                    title = parts[0].trim()
-                    artist = parts[1].trim()
-                    Log.d(TAG, "Shazam extraction approach 2 - Title: \"$title\", Artist: \"$artist\"")
-                }
+            // Validate Shazam URL format
+            if (!url.contains("/song/")) {
+                Log.e(TAG, "Invalid Shazam URL format - must be a song URL")
+                return null
             }
             
-            // If we still couldn't find them, try parsing the URL
-            if (title.isEmpty()) {
-                val urlPath = url.substringAfterLast("/")
-                val songSlug = urlPath.split("?")[0]
-                // Replace hyphens with spaces and capitalize first letters
-                title = songSlug.replace("-", " ")
-                Log.d(TAG, "Shazam extraction approach 3 - Title from URL: \"$title\"")
+            Log.d(TAG, "Fetching Shazam page content...")
+            val doc = Jsoup.connect(url)
+                .timeout(TIMEOUT_MS)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                .get()
+            
+            // Extract from meta tags - this is the most reliable method
+            val metaTitle = doc.select("meta[property=og:title]").attr("content")
+            Log.d(TAG, "Meta title content: \"$metaTitle\"")
+            
+            if (metaTitle.isBlank()) {
+                Log.e(TAG, "No meta title found")
+                return null
             }
             
-            if (title.isNotEmpty()) {
-                SongInfo(title, artist)
-            } else {
-                null
+            if (!metaTitle.contains(" - ")) {
+                Log.e(TAG, "Meta title does not contain artist separator: \"$metaTitle\"")
+                return null
             }
-        } catch (e: IOException) {
-            Log.e(TAG, "Error extracting Shazam info: ${e.message}")
+            
+            val parts = metaTitle.split(" - ", limit = 2)  // Only split on first occurrence
+            val title = parts[0].trim()
+            val artist = parts[1].trim()
+            
+            // Validate extracted data
+            if (title.isBlank() || artist.isBlank()) {
+                Log.e(TAG, "Invalid song info - title or artist is blank after splitting")
+                return null
+            }
+            
+            Log.d(TAG, "=== Extraction successful ===")
+            Log.d(TAG, "Song title: \"$title\"")
+            Log.d(TAG, "Artist: \"$artist\"")
+            SongInfo(title, artist)
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "=== Extraction failed ===")
+            Log.e(TAG, "Error type: ${e.javaClass.simpleName}")
+            Log.e(TAG, "Error message: ${e.message}")
+            Log.e(TAG, "Stack trace:")
             e.printStackTrace()
             null
         }
