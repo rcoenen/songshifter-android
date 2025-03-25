@@ -82,10 +82,6 @@ class SpotifyHandler(private val context: Context) {
             val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
             intent.data = Uri.fromParts("package", SPOTIFY_PACKAGE, null)
             context.startActivity(intent)
-            
-            Toast.makeText(context, 
-                "To use YouTube Music as your preferred platform, uninstall Spotify", 
-                Toast.LENGTH_LONG).show()
         } catch (e: Exception) {
             Toast.makeText(context, 
                 "Couldn't open Spotify settings. Please uninstall Spotify manually.", 
@@ -94,19 +90,85 @@ class SpotifyHandler(private val context: Context) {
     }
     
     /**
-     * Opens Play Store to uninstall Spotify
+     * Opens app info page for Spotify to let user uninstall it
      */
     fun openSpotifyUninstall() {
+        // First verify Spotify is actually installed
+        if (!isSpotifyInstalled()) {
+            Log.i(TAG, "✓ Spotify is not installed, nothing to uninstall")
+            Toast.makeText(context, 
+                "Spotify is not installed on this device.",
+                Toast.LENGTH_SHORT).show()
+            return
+        }
+        
+        Log.d(TAG, "Opening Spotify app info for uninstall...")
+        
+        // Direct approach: Open app details settings page where user can uninstall
         try {
-            val intent = Intent(Intent.ACTION_DELETE)
-            intent.data = Uri.parse("package:$SPOTIFY_PACKAGE")
+            val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+            intent.data = Uri.fromParts("package", SPOTIFY_PACKAGE, null)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(intent)
+            
+            // Show instructions
+            Toast.makeText(
+                context,
+                "Tap 'Uninstall' to remove Spotify",
+                Toast.LENGTH_LONG
+            ).show()
+            Log.d(TAG, "✅ Opened app details settings for Spotify")
+            return
         } catch (e: Exception) {
-            Log.e(TAG, "Error uninstalling Spotify: ${e.message}")
-            Toast.makeText(context, 
-                "Couldn't open uninstall screen. Please uninstall Spotify manually.", 
-                Toast.LENGTH_LONG).show()
+            Log.e(TAG, "❌ Error opening app settings: ${e.message}")
+            e.printStackTrace()
         }
+        
+        // Fallback 1: Use ACTION_DELETE if app info page fails
+        try {
+            val packageURI = Uri.parse("package:$SPOTIFY_PACKAGE")
+            val deleteIntent = Intent(Intent.ACTION_DELETE, packageURI)
+            deleteIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            
+            context.startActivity(deleteIntent)
+            Log.d(TAG, "✅ Started ACTION_DELETE intent for Spotify")
+            
+            // Show confirmation toast
+            Toast.makeText(
+                context,
+                "Confirm uninstall when prompted",
+                Toast.LENGTH_LONG
+            ).show()
+            return
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error using ACTION_DELETE: ${e.message}")
+            e.printStackTrace()
+        }
+        
+        // Fallback 2: Try to show general app settings
+        try {
+            val intent = Intent(Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+            
+            Toast.makeText(
+                context,
+                "Find Spotify in the list and tap to uninstall",
+                Toast.LENGTH_LONG
+            ).show()
+            Log.d(TAG, "✅ Opened general app settings")
+            return
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error opening app manager settings: ${e.message}")
+            e.printStackTrace()
+        }
+        
+        // If all methods failed, show diagnostic info
+        Toast.makeText(
+            context,
+            "Unable to open Spotify settings. Please uninstall it manually from your device settings.",
+            Toast.LENGTH_LONG
+        ).show()
+        Log.e(TAG, "❌ All uninstall approaches failed")
     }
 } 

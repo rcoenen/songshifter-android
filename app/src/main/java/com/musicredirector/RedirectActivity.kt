@@ -198,7 +198,7 @@ class RedirectActivity : AppCompatActivity() {
                     Log.d(TAG, "✅ Extraction successful! Title: '${songInfo.title}', Artist: '${songInfo.artist}'")
                     Log.d(TAG, "🎯 Target platform: $preferredPlatform")
                     
-                    showProgress("Opening ${getPlatformName(preferredPlatform)}...")
+                    showProgress("Opening in preferred app...")
                     
                     // Small delay to show the opening message
                     withContext(Dispatchers.IO) {
@@ -245,67 +245,135 @@ class RedirectActivity : AppCompatActivity() {
                             // Simple direct YouTube Music approach
                             try {
                                 val youtubeUri = "youtube-music://search?q=$query"
+                                
+                                // Check if YouTube Music is really installed AND enabled
+                                val isYTMusicReallyInstalled = isAppInstalled(YOUTUBE_MUSIC_PACKAGE)
+                                Log.d(TAG, "🧪 Thorough check: Is YouTube Music really installed? $isYTMusicReallyInstalled")
+                                
+                                if (!isYTMusicReallyInstalled) {
+                                    // If YouTube Music is installed but disabled, we need to detect that too
+                                    val isYTMusicDisabled = isYouTubeMusicDisabled()
+                                    
+                                    if (isYTMusicDisabled) {
+                                        Log.e(TAG, "❌ YouTube Music is installed but disabled")
+                                        showYouTubeMusicEnablePrompt()
+                                        return@launch
+                                    } else {
+                                        Log.e(TAG, "❌ YouTube Music is not installed")
+                                        showYouTubeMusicInstallPrompt()
+                                        return@launch
+                                    }
+                                }
+                                
                                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(youtubeUri))
                                 intent.setPackage(YOUTUBE_MUSIC_PACKAGE)
                                 startActivity(intent)
                                 Log.d(TAG, "✅ Launched YouTube Music search")
                             } catch (e: Exception) {
                                 Log.e(TAG, "❌ Failed to launch YouTube Music: ${e.message}")
-                                showWrongConfigAlert(preferredPlatform)
+                                
+                                // Try fallback approach using regular search intent
+                                try {
+                                    Log.d(TAG, "🔄 Trying fallback approach for YouTube Music with regular search Intent")
+                                    val searchIntent = Intent(Intent.ACTION_SEARCH)
+                                    searchIntent.setPackage(YOUTUBE_MUSIC_PACKAGE)
+                                    searchIntent.putExtra("query", "${songInfo.title} ${songInfo.artist}".trim())
+                                    startActivity(searchIntent)
+                                    Log.d(TAG, "✅ Fallback approach for YouTube Music succeeded")
+                                    return@launch
+                                } catch (e2: Exception) {
+                                    Log.e(TAG, "❌ Fallback approach for YouTube Music failed: ${e2.message}")
+                                    
+                                    // Try another fallback using web URL
+                                    try {
+                                        Log.d(TAG, "🔄 Trying second fallback approach for YouTube Music with web URL")
+                                        val query = Uri.encode("${songInfo.title} ${songInfo.artist}".trim())
+                                        
+                                        // First check if this would cause a circular redirection
+                                        val testIntent = Intent(Intent.ACTION_VIEW, 
+                                            Uri.parse("https://music.youtube.com/search?q=test"))
+                                        val resolveInfoList = packageManager.queryIntentActivities(testIntent, 0)
+                                        
+                                        // Check if our own app would intercept this
+                                        val wouldCauseCircularRedirection = resolveInfoList.any { resolveInfo ->
+                                            resolveInfo.activityInfo.packageName == packageName ||
+                                            resolveInfo.activityInfo.packageName.contains("ninsu") ||
+                                            resolveInfo.activityInfo.packageName.contains("musicredirector")
+                                        }
+                                        
+                                        if (wouldCauseCircularRedirection) {
+                                            Log.e(TAG, "⚠️ Detected potential circular redirection for YouTube Music web URL")
+                                            
+                                            // Show more informative message to the user
+                                            Toast.makeText(
+                                                this@RedirectActivity,
+                                                "Warning: Another app (possibly NINSU) is intercepting YouTube Music links. " +
+                                                "Please disable it in Settings > Apps > Link handling.",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                            
+                                            // Try a last resort approach with explicit package targeting
+                                            try {
+                                                val startAppIntent = packageManager.getLaunchIntentForPackage(YOUTUBE_MUSIC_PACKAGE)
+                                                if (startAppIntent != null) {
+                                                    Log.d(TAG, "🔄 Trying last resort approach: Just launching YouTube Music app")
+                                                    startActivity(startAppIntent)
+                                                    
+                                                    // Show instructions to search manually
+                                                    Toast.makeText(
+                                                        this@RedirectActivity,
+                                                        "Please search for: ${songInfo.title} by ${songInfo.artist}",
+                                                        Toast.LENGTH_LONG
+                                                    ).show()
+                                                    return@launch
+                                                }
+                                            } catch (e: Exception) {
+                                                Log.e(TAG, "❌ Last resort approach failed: ${e.message}")
+                                            }
+                                            
+                                            // If we get here, show the error
+                                            showCircularRedirectionError()
+                                            return@launch
+                                        }
+                                        
+                                        // No circular redirection detected, try the web URL approach
+                                        val webIntent = Intent(Intent.ACTION_VIEW, 
+                                            Uri.parse("https://music.youtube.com/search?q=$query"))
+                                        webIntent.setPackage(YOUTUBE_MUSIC_PACKAGE)
+                                        startActivity(webIntent)
+                                        Log.d(TAG, "✅ Second fallback approach for YouTube Music succeeded")
+                                        return@launch
+                                    } catch (e3: Exception) {
+                                        Log.e(TAG, "❌ Second fallback approach for YouTube Music failed: ${e3.message}")
+                                        showWrongConfigAlert(preferredPlatform)
+                                    }
+                                }
                             }
                         }
                     } catch (e: Exception) {
                         Log.e(TAG, "❌ Error during redirection: ${e.message}")
-                        showWrongConfigAlert(preferredPlatform)
+                        showErrorAndExit("Error during redirection: ${e.message}")
                     }
                 } else {
-                    Log.e(TAG, "❌ Song info extraction failed, no data returned")
+                    Log.e(TAG, "❌ Failed to extract song info")
                     showErrorAndExit("Could not extract song information")
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "❌ Error during redirection: ${e.message}")
-                showErrorAndExit("Error during redirection: ${e.message}")
+                Log.e(TAG, "❌ Error during extraction: ${e.message}")
+                showErrorAndExit("Error during extraction: ${e.message}")
             } finally {
                 finish()
             }
         }
     }
     
-    private fun showWrongConfigAlert(preferredPlatform: String) {
-        val platformName = getPlatformName(preferredPlatform)
-        
-        val instructions = if (preferredPlatform == PreferencesHelper.PLATFORM_SPOTIFY) {
-            "Your preferred platform is Spotify, but it appears you're trying to open Spotify with this app.\n\n" +
-            "To redirect from YouTube Music to Spotify, you need to:\n" +
-            "1. Go to Android Settings > Apps > Music Redirector > Open by default\n" +
-            "2. DISABLE 'open.spotify.com' links for this app\n" +
-            "3. ENABLE 'music.youtube.com' links for this app\n\n" +
-            "Would you like to open these settings now?"
-        } else {
-            "Your preferred platform is YouTube Music, but it appears you're trying to open YouTube Music with this app.\n\n" +
-            "To redirect from Spotify to YouTube Music, you need to:\n" +
-            "1. Go to Android Settings > Apps > Music Redirector > Open by default\n" +
-            "2. DISABLE 'music.youtube.com' links for this app\n" +
-            "3. ENABLE 'open.spotify.com' links for this app\n\n" +
-            "Would you like to open these settings now?"
+    private fun showWrongConfigAlert(platform: String) {
+        val message = when (platform) {
+            PreferencesHelper.PLATFORM_SPOTIFY -> "Please make sure Spotify is installed and configured correctly."
+            PreferencesHelper.PLATFORM_YOUTUBE_MUSIC -> "Could not search in YouTube Music. Try opening YouTube Music manually and searching for the song."
+            else -> "Please check your app configuration."
         }
-        
-        androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Incorrect Configuration Detected")
-            .setMessage(instructions)
-            .setPositiveButton("Open Settings") { _, _ ->
-                try {
-                    val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                        data = Uri.parse("package:$packageName")
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    }
-                    startActivity(intent)
-                } catch (e: Exception) {
-                    Log.e(TAG, "❌ Error opening settings: ${e.message}")
-                }
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+        showErrorAndExit(message)
     }
     
     private fun launchInBrowser(url: String) {
@@ -386,20 +454,37 @@ class RedirectActivity : AppCompatActivity() {
             } 
             // For YouTube Music, check if it can handle youtube-music: scheme
             else if (packageName == YOUTUBE_MUSIC_PACKAGE) {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("youtube-music:"))
-                val activities = packageManager.queryIntentActivities(intent, 0)
-                val hasYouTubeMusicHandler = activities.any { it.activityInfo.packageName == YOUTUBE_MUSIC_PACKAGE }
+                // First check if app is enabled using the more reliable method
+                val appInfo = packageManager.getApplicationInfo(YOUTUBE_MUSIC_PACKAGE, 0)
+                val isEnabled = appInfo.enabled
+                val enabledSetting = packageManager.getApplicationEnabledSetting(YOUTUBE_MUSIC_PACKAGE)
+                val isReallyEnabled = isEnabled && enabledSetting != PackageManager.COMPONENT_ENABLED_STATE_DISABLED
                 
-                Log.d(TAG, "📱 Checking YouTube Music installation - activities handling youtube-music: URI: ${activities.size}, hasHandler: $hasYouTubeMusicHandler")
+                Log.d(TAG, "📱 YouTube Music check - isEnabled: $isEnabled, enabledSetting: $enabledSetting, isReallyEnabled: $isReallyEnabled")
                 
-                if (!hasYouTubeMusicHandler) {
-                    val appInfo = packageManager.getApplicationInfo(YOUTUBE_MUSIC_PACKAGE, 0)
-                    val isEnabled = appInfo.enabled
-                    Log.d(TAG, "📱 Fallback YouTube Music check - isEnabled: $isEnabled")
-                    return isEnabled
+                // If the app is not enabled, return false immediately
+                if (!isReallyEnabled) {
+                    return false
                 }
                 
-                return hasYouTubeMusicHandler
+                // Now try the URI scheme check, but don't fail if this doesn't work
+                try {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("youtube-music:"))
+                    val activities = packageManager.queryIntentActivities(intent, 0)
+                    val hasYouTubeMusicHandler = activities.any { it.activityInfo.packageName == YOUTUBE_MUSIC_PACKAGE }
+                    
+                    Log.d(TAG, "📱 Checking YouTube Music installation - activities handling youtube-music: URI: ${activities.size}, hasHandler: $hasYouTubeMusicHandler")
+                    
+                    // Even if no handler found, we'll rely on the enabled check above
+                    if (!hasYouTubeMusicHandler) {
+                        Log.d(TAG, "📱 No handler for youtube-music: URI, but app is enabled so treating as installed")
+                    }
+                } catch (e: Exception) {
+                    Log.d(TAG, "📱 Error checking youtube-music: URI, but app is enabled so treating as installed: ${e.message}")
+                }
+                
+                // Return true based on the enabled check we already did, not the URI handler check
+                return isReallyEnabled
             } 
             // Generic check for other packages
             else {
@@ -560,23 +645,44 @@ class RedirectActivity : AppCompatActivity() {
     }
 
     private fun showSpotifyInstallPrompt() {
-        val message = "Spotify is not installed on your device. Please install it to use this feature."
+        val preferredPlatform = preferencesHelper.getPreferredPlatform()
+        val message: String
+        val title: String
+        val buttonText: String
+        
+        if (preferredPlatform == PreferencesHelper.PLATFORM_SPOTIFY) {
+            // In YouTube Music → Spotify mode, we need Spotify installed
+            message = "Spotify is not installed on your device. Please install it to use this feature."
+            title = "Install Spotify"
+            buttonText = "Install Spotify"
+        } else {
+            // In Spotify → YouTube Music mode, we actually need Spotify NOT installed
+            message = "Spotify is not available. Make sure YouTube Music is installed to use this feature."
+            title = "Check Configuration"
+            buttonText = "Install YouTube Music"
+        }
         
         Log.i(TAG, "ℹ️ Showing Spotify installation prompt")
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
         
         androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Action Required")
+            .setTitle(title)
             .setMessage(message)
-            .setPositiveButton("Install Spotify") { _, _ ->
+            .setPositiveButton(buttonText) { _, _ ->
                 try {
+                    val packageToInstall = if (preferredPlatform == PreferencesHelper.PLATFORM_SPOTIFY) {
+                        SPOTIFY_PACKAGE
+                    } else {
+                        YOUTUBE_MUSIC_PACKAGE
+                    }
+                    
                     val intent = Intent(Intent.ACTION_VIEW).apply {
-                        data = Uri.parse("market://details?id=$SPOTIFY_PACKAGE")
+                        data = Uri.parse("market://details?id=$packageToInstall")
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
                     startActivity(intent)
                 } catch (e: Exception) {
-                    Log.e(TAG, "❌ Error opening Spotify installation page: ${e.message}")
+                    Log.e(TAG, "❌ Error opening app installation page: ${e.message}")
                 }
             }
             .setNegativeButton("Cancel", null)
@@ -609,14 +715,9 @@ class RedirectActivity : AppCompatActivity() {
 
     private fun isSpotifyInstalledButDisabled(): Boolean {
         try {
-            // Check if the package exists but is disabled
-            val packageInfo = packageManager.getPackageInfo(SPOTIFY_PACKAGE, PackageManager.GET_DISABLED_COMPONENTS)
-            
-            // Check if it's disabled
-            val appInfo = packageManager.getApplicationInfo(SPOTIFY_PACKAGE, 0)
+            val appInfo = packageManager.getApplicationInfo(SPOTIFY_PACKAGE, PackageManager.GET_META_DATA)
             return !appInfo.enabled
-        } catch (e: Exception) {
-            Log.e(TAG, "Error checking if Spotify is disabled: ${e.message}")
+        } catch (e: PackageManager.NameNotFoundException) {
             return false
         }
     }
@@ -650,6 +751,75 @@ class RedirectActivity : AppCompatActivity() {
                     } catch (e2: Exception) {
                         Log.e(TAG, "❌ Error opening Play Store for Spotify: ${e2.message}")
                     }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    /**
+     * Checks if YouTube Music is disabled
+     */
+    private fun isYouTubeMusicDisabled(): Boolean {
+        return try {
+            val appInfo = packageManager.getApplicationInfo(YOUTUBE_MUSIC_PACKAGE, 0)
+            val enabledSetting = packageManager.getApplicationEnabledSetting(YOUTUBE_MUSIC_PACKAGE)
+            Log.d(TAG, "📱 Checking YouTube Music status: enabled=${appInfo.enabled}, enabledSetting=$enabledSetting")
+            
+            // The app is disabled if either check fails
+            !appInfo.enabled || enabledSetting == PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+        } catch (e: PackageManager.NameNotFoundException) {
+            Log.d(TAG, "📱 YouTube Music app not found")
+            true // Consider it disabled if not found
+        }
+    }
+    
+    /**
+     * Shows a prompt to enable YouTube Music
+     */
+    private fun showYouTubeMusicEnablePrompt() {
+        val message = "YouTube Music is installed but disabled on your device. You need to enable it to use this feature."
+        
+        Log.i(TAG, "ℹ️ Showing YouTube Music enable prompt")
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+        
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Enable YouTube Music")
+            .setMessage(message)
+            .setPositiveButton("Open Settings") { _, _ ->
+                try {
+                    val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.parse("package:$YOUTUBE_MUSIC_PACKAGE")
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ Error opening YouTube Music settings: ${e.message}")
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    /**
+     * Shows an error about circular redirection
+     */
+    private fun showCircularRedirectionError() {
+        val message = "Circular redirection detected. Another app (possibly NINSU) is set to " +
+                    "intercept YouTube Music links. Please disable it in Settings > Apps > Default apps."
+        
+        Log.e(TAG, "⚠️ " + message)
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+        
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Circular Redirection Detected")
+            .setMessage(message)
+            .setPositiveButton("Open Settings") { _, _ ->
+                try {
+                    val intent = Intent(android.provider.Settings.ACTION_APPLICATION_SETTINGS)
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ Error opening Settings: ${e.message}")
                 }
             }
             .setNegativeButton("Cancel", null)

@@ -81,7 +81,7 @@ class MainActivity : AppCompatActivity() {
     
     private fun setupDirectionSpinner() {
         // Create adapter with direction options
-        val directions = arrayOf("YouTube → Spotify", "Spotify → YouTube")
+        val directions = arrayOf("YouTube Music → Spotify", "Spotify → YouTube Music")
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, directions)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         directionSpinner.adapter = adapter
@@ -116,6 +116,17 @@ class MainActivity : AppCompatActivity() {
                     
                     // Update status indicators
                     platformManager.updateStatusIndicators()
+                    
+                    // Check if we need to adjust link handling for the new mode
+                    if (newPlatform == PreferencesHelper.PLATFORM_YOUTUBE_MUSIC) {
+                        // Switching to Spotify → YouTube Music mode
+                        // We need to check if we're currently handling YouTube Music links
+                        // If so, directly disable it to prevent circular redirection
+                        val isHandlingCorrect = linkVerificationManager.ensureCorrectLinkHandling(newPlatform)
+                        if (!isHandlingCorrect) {
+                            linkVerificationManager.disableYouTubeMusicHandling()
+                        }
+                    }
                 }
             }
             
@@ -146,19 +157,10 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun setupTestButton() {
-        // Setup test button click listener
-        findViewById<Button>(R.id.testButton)?.setOnClickListener {
-            handleTestButtonClick()
+        val mainTestButton = findViewById<Button>(R.id.mainTestButton)
+        mainTestButton.setOnClickListener {
+            redirectionHandler.testPlatformRedirection()
         }
-        
-        // Also set it up for the success test button
-        findViewById<Button>(R.id.successTestButton)?.setOnClickListener {
-            handleTestButtonClick()
-        }
-    }
-    
-    private fun handleTestButtonClick() {
-        redirectionHandler.testPlatformRedirection()
     }
     
     private fun handleIncomingIntent(intent: Intent?) {
@@ -180,5 +182,11 @@ class MainActivity : AppCompatActivity() {
         
         // Log that we've returned to the app
         Log.d(TAG, "App resumed, updating status indicators")
+    }
+    
+    private fun showLinkHandlingConfigurationPrompt() {
+        // This method is redundant since we're handling link configuration automatically
+        // Directly call the disable method instead
+        linkVerificationManager.disableYouTubeMusicHandling()
     }
 } 

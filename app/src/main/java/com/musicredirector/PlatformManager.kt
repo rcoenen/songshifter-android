@@ -1,10 +1,18 @@
 package com.musicredirector
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 
 /**
  * Manages platform selection and status across the app
@@ -23,14 +31,12 @@ class PlatformManager(
      * Updates all UI status indicators based on current app state
      */
     fun updateStatusIndicators() {
-        // Get current platform preference
-        val preferredPlatform = preferencesHelper.getPreferredPlatform()
-        
-        // Check link interception status
-        checkLinkInterceptionStatus()
-        
-        // Check app status (YouTube Music and Spotify)
+        // First check app status (YouTube Music and Spotify)
+        // This needs to be done before checking link interception
         checkAppStatus()
+        
+        // Then check link interception status only if app requirements are met
+        checkLinkInterceptionStatus()
         
         // Check if everything is configured correctly and show the "all good" message if it is
         updateAllGoodStatus()
@@ -40,54 +46,38 @@ class PlatformManager(
      * Check if all configurations are correct and show the "all good" message if they are
      */
     private fun updateAllGoodStatus() {
-        val preferredPlatform = preferencesHelper.getPreferredPlatform()
-        
         // Check verification status for both domains
         val ytMusicLinksVerified = linkVerificationManager.isDomainVerifiedInSettings("music.youtube.com")
         val spotifyLinksVerified = linkVerificationManager.isDomainVerifiedInSettings("open.spotify.com")
         
         // Get the app handling status
         val ytMusicHandlingLinks = youTubeMusicHandler.isYouTubeMusicHandlingLinks()
-        val spotifyHandlingLinks = spotifyHandler.isSpotifyHandlingLinks()
+        val spotifyInstalled = spotifyHandler.isSpotifyInstalled()
         
         // Check if everything is correctly configured based on the selected platform
-        val allConfigured = if (preferredPlatform == PreferencesHelper.PLATFORM_SPOTIFY) {
-            // YouTube → Spotify: 
-            // - YouTube Music links should be verified
-            // - YouTube Music should NOT be handling links
-            ytMusicLinksVerified && (!ytMusicHandlingLinks || !youTubeMusicHandler.isYouTubeMusicInstalled())
+        val allConfigured = if (preferencesHelper.getPreferredPlatform() == PreferencesHelper.PLATFORM_SPOTIFY) {
+            (!ytMusicHandlingLinks) && ytMusicLinksVerified
         } else {
-            // Spotify → YouTube Music:
-            // - Spotify links should be verified
-            // - Spotify should not exist or not be handling links
-            spotifyLinksVerified && (!spotifyHandlingLinks || !spotifyHandler.isSpotifyInstalled())
+            (!spotifyInstalled) && spotifyLinksVerified
+        }
+        
+        // Update header text based on configuration status
+        val setupStatusHeader = findViewById<TextView>(R.id.setupStatusHeader)
+        setupStatusHeader.text = if (allConfigured) {
+            "Setup Status"
+        } else {
+            "Setup Status: ⚠️ Incomplete"
         }
         
         // Show/hide UI states based on configuration
         val configStatusLayout = findViewById<View>(R.id.configStatusLayout)
-        val warningStatusLayout = findViewById<View>(R.id.warningStatusLayout)
+        val mainTestButton = findViewById<Button>(R.id.mainTestButton)
         
-        if (allConfigured) {
-            // Show success state, hide warning
-            configStatusLayout.visibility = View.VISIBLE
-            warningStatusLayout.visibility = View.GONE
-            
-            // Update the test button - Create new button in success state if needed
-            val successTestButton = findViewById<Button>(R.id.successTestButton)
-            if (successTestButton != null) {
-                successTestButton.text = "TRY IT OUT - TEST REDIRECTION"
-                successTestButton.isEnabled = true
-            }
-        } else {
-            // Show warning state, hide success
-            configStatusLayout.visibility = View.GONE
-            warningStatusLayout.visibility = View.VISIBLE
-            
-            // Update the test button
-            val testButton = findViewById<Button>(R.id.testButton)
-            testButton.text = "CONFIGURATION INCOMPLETE"
-            testButton.isEnabled = false
-        }
+        configStatusLayout.visibility = View.VISIBLE
+        
+        // Enable/disable the test button
+        mainTestButton.isEnabled = allConfigured
+        mainTestButton.text = "TEST REDIRECTION"
     }
     
     /**
@@ -96,21 +86,27 @@ class PlatformManager(
     private fun checkAppStatus() {
         val preferredPlatform = preferencesHelper.getPreferredPlatform()
         
-        // Update YouTube Music app status
+        // Get all status views
         val ytMusicLayout = findViewById<View>(R.id.ytMusicStatusLayout)
         val ytMusicStatusIcon = findViewById<View>(R.id.ytMusicStatusIcon)
         val ytMusicStatusText = findViewById<TextView>(R.id.ytMusicStatusText)
         val ytMusicSettingsButton = findViewById<Button>(R.id.openYTMusicSettingsButton)
         
-        // Update Spotify app status
         val spotifyLayout = findViewById<View>(R.id.spotifyStatusLayout)
         val spotifyStatusIcon = findViewById<View>(R.id.spotifyStatusIcon)
         val spotifyStatusText = findViewById<TextView>(R.id.spotifyStatusText)
         val spotifySettingsButton = findViewById<Button>(R.id.openSpotifySettingsButton)
         
-        // For YouTube → Spotify (preferredPlatform == SPOTIFY)
+        // First hide all status rows
+        ytMusicLayout.visibility = View.GONE
+        spotifyLayout.visibility = View.GONE
+        
+        // For YouTube Music → Spotify (preferredPlatform == PLATFORM_SPOTIFY)
         if (preferredPlatform == PreferencesHelper.PLATFORM_SPOTIFY) {
-            // Show YouTube Music status (needs to be disabled)
+            // STEP 1: Check if YouTube Music is installed but disabled
+            ytMusicLayout.tag = "step1"
+            ytMusicLayout.visibility = View.VISIBLE
+            
             if (youTubeMusicHandler.isYouTubeMusicInstalled()) {
                 ytMusicLayout.visibility = View.VISIBLE
                 
@@ -118,10 +114,16 @@ class PlatformManager(
                 ytMusicStatusIcon.setBackgroundResource(
                     if (!isYtMusicHandlingLinks) R.drawable.status_green else R.drawable.status_red
                 )
-                ytMusicStatusText.text = if (!isYtMusicHandlingLinks) 
-                    "✓ YouTube Music app link handling disabled" 
-                else 
-                    "✗ YouTube Music app needs to be disabled (tap to fix)"
+                
+                if (!isYtMusicHandlingLinks) {
+                    ytMusicStatusText.text = "1. ✓ YouTube Music app disabled"
+                    ytMusicStatusText.setTextColor(context.getColor(android.R.color.tab_indicator_text))
+                    ytMusicStatusText.paintFlags = ytMusicStatusText.paintFlags and android.graphics.Paint.UNDERLINE_TEXT_FLAG.inv()
+                } else {
+                    ytMusicStatusText.text = "1. ✗ YouTube Music app needs to be disabled (tap to fix)"
+                    ytMusicStatusText.setTextColor(context.getColor(android.R.color.holo_blue_dark))
+                    ytMusicStatusText.paintFlags = ytMusicStatusText.paintFlags or android.graphics.Paint.UNDERLINE_TEXT_FLAG
+                }
                 
                 // Make the entire row clickable if YouTube Music is handling links
                 if (isYtMusicHandlingLinks) {
@@ -144,47 +146,194 @@ class PlatformManager(
                 ytMusicSettingsButton.visibility = View.GONE
             }
             
-            // Hide Spotify status (not important in this mode)
-            spotifyLayout.visibility = View.GONE
-            spotifySettingsButton.visibility = View.GONE
+            // STEP 2: Check if Spotify is installed
+            spotifyLayout.tag = "step2"
+            spotifyLayout.visibility = View.VISIBLE
+            
+            if (!spotifyHandler.isSpotifyInstalled()) {
+                // Spotify needs to be installed in this mode
+                spotifyStatusIcon.setBackgroundResource(R.drawable.status_red)
+                spotifyStatusText.text = "2. ✗ Spotify app needs to be installed (tap to fix)"
+                spotifyStatusText.setTextColor(context.getColor(android.R.color.holo_blue_dark))
+                spotifyStatusText.paintFlags = spotifyStatusText.paintFlags or android.graphics.Paint.UNDERLINE_TEXT_FLAG
+                
+                // Make the entire row clickable
+                spotifyLayout.isClickable = true
+                spotifyLayout.isFocusable = true
+                spotifyLayout.setOnClickListener {
+                    val intent = Intent(Intent.ACTION_VIEW).apply {
+                        data = Uri.parse("market://details?id=com.spotify.music")
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    try {
+                        context.startActivity(intent)
+                    } catch (e: Exception) {
+                        // Fallback to browser if Play Store isn't available
+                        val fallbackIntent = Intent(Intent.ACTION_VIEW).apply {
+                            data = Uri.parse("https://play.google.com/store/apps/details?id=com.spotify.music")
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        try {
+                            context.startActivity(fallbackIntent)
+                        } catch (e2: Exception) {
+                            Log.e(TAG, "Failed to open Spotify in Play Store or browser: ${e2.message}")
+                        }
+                    }
+                }
+                
+                // Hide the dedicated button as we made the row clickable
+                spotifySettingsButton.visibility = View.GONE
+            } else {
+                // Spotify is installed, show success
+                spotifyStatusIcon.setBackgroundResource(R.drawable.status_green)
+                spotifyStatusText.text = "2. ✓ Spotify app is installed and ready"
+                spotifyStatusText.setTextColor(context.getColor(android.R.color.tab_indicator_text))
+                spotifyStatusText.paintFlags = spotifyStatusText.paintFlags and android.graphics.Paint.UNDERLINE_TEXT_FLAG.inv()
+                spotifyLayout.isClickable = false
+                spotifyLayout.isFocusable = false
+                spotifyLayout.setOnClickListener(null)
+                spotifySettingsButton.visibility = View.GONE
+            }
         } 
         // For Spotify → YouTube Music (preferredPlatform == YOUTUBE_MUSIC)
         else {
-            // Hide YouTube Music status (not important in this mode)
-            ytMusicLayout.visibility = View.GONE
-            ytMusicSettingsButton.visibility = View.GONE
+            // STEP 1: Check if YouTube Music is installed (needed for this mode)
+            ytMusicLayout.tag = "step1"
+            ytMusicLayout.visibility = View.VISIBLE
             
-            // Show Spotify status if installed
+            // We need to check if YouTube Music is both installed AND enabled
+            val isYtMusicInstalled = youTubeMusicHandler.isYouTubeMusicInstalled()
+            val isYtMusicDisabled = youTubeMusicHandler.isYouTubeMusicDisabled()
+            
+            if (!isYtMusicInstalled) {
+                // YouTube Music needs to be installed in this mode
+                ytMusicStatusIcon.setBackgroundResource(R.drawable.status_red)
+                ytMusicStatusText.text = "1. ✗ YouTube Music app needs to be installed (tap to fix)"
+                ytMusicStatusText.setTextColor(context.getColor(android.R.color.holo_blue_dark))
+                ytMusicStatusText.paintFlags = ytMusicStatusText.paintFlags or android.graphics.Paint.UNDERLINE_TEXT_FLAG
+                
+                // Make the entire row clickable
+                ytMusicLayout.isClickable = true
+                ytMusicLayout.isFocusable = true
+                ytMusicLayout.setOnClickListener {
+                    val intent = Intent(Intent.ACTION_VIEW).apply {
+                        data = Uri.parse("market://details?id=com.google.android.apps.youtube.music")
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    try {
+                        context.startActivity(intent)
+                    } catch (e: Exception) {
+                        // Fallback to browser if Play Store isn't available
+                        val fallbackIntent = Intent(Intent.ACTION_VIEW).apply {
+                            data = Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.apps.youtube.music")
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        try {
+                            context.startActivity(fallbackIntent)
+                        } catch (e2: Exception) {
+                            Log.e(TAG, "Failed to open YouTube Music in Play Store or browser: ${e2.message}")
+                        }
+                    }
+                }
+                
+                // Hide the dedicated button as we made the row clickable
+                ytMusicSettingsButton.visibility = View.GONE
+            } else if (isYtMusicDisabled) {
+                // YouTube Music is installed but disabled - needs to be enabled
+                ytMusicStatusIcon.setBackgroundResource(R.drawable.status_red)
+                ytMusicStatusText.text = "1. ✗ YouTube Music app needs to be enabled (tap to fix)"
+                ytMusicStatusText.setTextColor(context.getColor(android.R.color.holo_blue_dark))
+                ytMusicStatusText.paintFlags = ytMusicStatusText.paintFlags or android.graphics.Paint.UNDERLINE_TEXT_FLAG
+                
+                // Make the entire row clickable to open YouTube Music settings
+                ytMusicLayout.isClickable = true
+                ytMusicLayout.isFocusable = true
+                ytMusicLayout.setOnClickListener {
+                    youTubeMusicHandler.openYouTubeMusicSettings()
+                    
+                    // Show toast with instructions
+                    Toast.makeText(
+                        context, 
+                        "Enable YouTube Music and tap 'Enable' under 'Open by default'", 
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+                
+                // Hide the dedicated button as we made the row clickable
+                ytMusicSettingsButton.visibility = View.GONE
+            } else {
+                // YouTube Music is installed and enabled, show success
+                ytMusicStatusIcon.setBackgroundResource(R.drawable.status_green)
+                ytMusicStatusText.text = "1. ✓ YouTube Music app is installed and enabled"
+                ytMusicStatusText.setTextColor(context.getColor(android.R.color.tab_indicator_text))
+                ytMusicStatusText.paintFlags = ytMusicStatusText.paintFlags and android.graphics.Paint.UNDERLINE_TEXT_FLAG.inv()
+                ytMusicLayout.isClickable = false
+                ytMusicLayout.isFocusable = false
+                ytMusicLayout.setOnClickListener(null)
+                ytMusicSettingsButton.visibility = View.GONE
+                
+                // IMPORTANT: Check if we need to disable this app as a handler for YouTube Music links
+                // to prevent circular redirection in this mode
+                checkLinkHandlingConfiguration()
+            }
+            
+            // STEP 2: Check if Spotify is uninstalled (needs to be uninstalled for this mode)
+            spotifyLayout.tag = "step2"
+            spotifyLayout.visibility = View.VISIBLE
+            
             if (spotifyHandler.isSpotifyInstalled()) {
-                spotifyLayout.visibility = View.VISIBLE
+                spotifyStatusIcon.setBackgroundResource(R.drawable.status_red)
+                spotifyStatusText.text = "2. ✗ Spotify app needs to be uninstalled (tap to fix)"
+                spotifyStatusText.setTextColor(context.getColor(android.R.color.holo_blue_dark))
+                spotifyStatusText.paintFlags = spotifyStatusText.paintFlags or android.graphics.Paint.UNDERLINE_TEXT_FLAG
                 
-                val isSpotifyHandlingLinks = spotifyHandler.isSpotifyHandlingLinks()
-                spotifyStatusIcon.setBackgroundResource(
-                    if (!isSpotifyHandlingLinks) R.drawable.status_green else R.drawable.status_red
-                )
-                spotifyStatusText.text = if (!isSpotifyHandlingLinks) 
-                    "✓ Spotify app link handling disabled" 
-                else 
-                    "✗ Spotify app needs to be disabled (tap to fix)"
+                // Add direct click listener to the text as well
+                spotifyStatusText.setOnClickListener {
+                    Log.d(TAG, "Spotify text clicked - opening uninstall")
+                    spotifyHandler.openSpotifyUninstall()
+                }
+                spotifyStatusText.isClickable = true
                 
-                // Make the entire row clickable if Spotify is handling links
-                if (isSpotifyHandlingLinks) {
-                    spotifyLayout.isClickable = true
-                    spotifyLayout.isFocusable = true
-                    spotifyLayout.setOnClickListener {
-                        spotifyHandler.openSpotifySettings()
+                // Make the entire row clickable with explicit feedback
+                spotifyLayout.isClickable = true
+                spotifyLayout.isFocusable = true
+                // Use context compat for better touch feedback
+                spotifyLayout.foreground = context.getDrawable(android.R.drawable.list_selector_background)
+                spotifyLayout.setOnClickListener { 
+                    Log.d(TAG, "Spotify row clicked - opening uninstall")
+                    // Add vibration feedback
+                    try {
+                        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as android.os.Vibrator
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            vibrator.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
+                        } else {
+                            @Suppress("DEPRECATION")
+                            vibrator.vibrate(50)
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Could not vibrate: ${e.message}")
                     }
                     
-                    // Hide the dedicated button as we made the row clickable
-                    spotifySettingsButton.visibility = View.GONE
-                } else {
-                    spotifyLayout.isClickable = false
-                    spotifyLayout.isFocusable = false
-                    spotifyLayout.setOnClickListener(null)
-                    spotifySettingsButton.visibility = View.GONE
+                    // Add a toast for confirmation
+                    Toast.makeText(context, "Opening Spotify uninstall...", Toast.LENGTH_SHORT).show()
+                    
+                    // Call the handler
+                    spotifyHandler.openSpotifyUninstall()
                 }
+                
+                // Hide the dedicated button as we made the row clickable
+                spotifySettingsButton.visibility = View.GONE
             } else {
-                spotifyLayout.visibility = View.GONE
+                spotifyStatusIcon.setBackgroundResource(R.drawable.status_green)
+                spotifyStatusText.text = "2. ✓ Spotify app is uninstalled"
+                spotifyStatusText.setTextColor(context.getColor(android.R.color.tab_indicator_text))
+                spotifyStatusText.paintFlags = spotifyStatusText.paintFlags and android.graphics.Paint.UNDERLINE_TEXT_FLAG.inv()
+                spotifyLayout.isClickable = false
+                spotifyLayout.isFocusable = false
+                spotifyLayout.foreground = null
+                spotifyLayout.setOnClickListener(null)
+                spotifyStatusText.isClickable = false
+                spotifyStatusText.setOnClickListener(null)
                 spotifySettingsButton.visibility = View.GONE
             }
         }
@@ -213,43 +362,132 @@ class PlatformManager(
         val spotifyLinkStatusIcon = findViewById<View>(R.id.spotifyLinkInterceptionStatusIcon)
         val spotifyLinkStatusText = findViewById<TextView>(R.id.spotifyLinkInterceptionStatusText)
         
+        // Hide all link status layouts by default
+        ytLinkLayout.visibility = View.GONE
+        spotifyLinkLayout.visibility = View.GONE
+        
         // Set overall setup description based on preference
         val setupDescription = findViewById<TextView>(R.id.setupStatusDescription)
-        setupDescription.visibility = View.GONE
+        setupDescription.visibility = View.VISIBLE
+        setupDescription.text = if (preferredPlatform == PreferencesHelper.PLATFORM_SPOTIFY) {
+            "To play YouTube Music links in Spotify, complete these steps:"
+        } else {
+            "To play Spotify links in YouTube Music, complete these steps:"
+        }
         
         // Update UI based on the selected platform
         if (preferredPlatform == PreferencesHelper.PLATFORM_SPOTIFY) {
-            // YouTube → Spotify: Show YouTube Music link status (we need to intercept these)
+            // Check if YouTube Music app is handling links
+            val isYtMusicHandlingLinks = youTubeMusicHandler.isYouTubeMusicHandlingLinks()
+            
+            // YouTube → Spotify: Show YouTube Music link status only if YouTube Music is disabled
+            ytLinkLayout.tag = "step3"
             ytLinkLayout.visibility = View.VISIBLE
-            ytLinkStatusIcon.setBackgroundResource(
-                if (ytMusicLinksVerified) R.drawable.status_green else R.drawable.status_red
-            )
-            ytLinkStatusText.text = if (ytMusicLinksVerified) 
-                "✓ YouTube Music links will be intercepted" 
-            else
-                "✗ Configure YouTube Music links in app settings"
+            
+            if (isYtMusicHandlingLinks) {
+                // First step not complete yet, show third step as unavailable
+                ytLinkStatusIcon.setBackgroundResource(R.drawable.status_grey)
+                ytLinkStatusText.text = "3. Configure YouTube Music links (complete step 2 first)"
+                ytLinkStatusText.setTextColor(context.getColor(android.R.color.darker_gray))
+                ytLinkLayout.isClickable = false
+                ytLinkLayout.isFocusable = false
+                ytLinkLayout.setOnClickListener(null)
+            } else {
+                // Step 2 complete, show real status of link interception
+                ytLinkStatusIcon.setBackgroundResource(
+                    if (ytMusicLinksVerified) R.drawable.status_green else R.drawable.status_red
+                )
                 
-            // Hide Spotify link status (not relevant)
-            spotifyLinkLayout.visibility = View.GONE
+                if (ytMusicLinksVerified) {
+                    // Success state
+                    ytLinkStatusText.text = "3. ✓ YouTube Music links will be intercepted"
+                    ytLinkStatusText.setTextColor(context.getColor(android.R.color.tab_indicator_text))
+                    ytLinkStatusText.paintFlags = ytLinkStatusText.paintFlags and android.graphics.Paint.UNDERLINE_TEXT_FLAG.inv()
+                } else {
+                    // Needs action - style as hyperlink
+                    ytLinkStatusText.text = "3. ✗ Configure YouTube Music links (tap to fix)"
+                    ytLinkStatusText.setTextColor(context.getColor(android.R.color.holo_blue_dark))
+                    ytLinkStatusText.paintFlags = ytLinkStatusText.paintFlags or android.graphics.Paint.UNDERLINE_TEXT_FLAG
+                }
+                    
+                // Make the row clickable if links need to be configured
+                if (!ytMusicLinksVerified) {
+                    ytLinkLayout.isClickable = true
+                    ytLinkLayout.isFocusable = true
+                    ytLinkLayout.setOnClickListener {
+                        linkVerificationManager.openAppLinkSettings()
+                    }
+                } else {
+                    ytLinkLayout.isClickable = false
+                    ytLinkLayout.isFocusable = false
+                    ytLinkLayout.setOnClickListener(null)
+                }
+            }
         } else {
-            // Spotify → YouTube Music: Show Spotify link status (we need to intercept these)
+            // Spotify → YouTube Music: Show Spotify link status only if Spotify is uninstalled
+            spotifyLinkLayout.tag = "step3"
             spotifyLinkLayout.visibility = View.VISIBLE
-            spotifyLinkStatusIcon.setBackgroundResource(
-                if (spotifyLinksVerified) R.drawable.status_green else R.drawable.status_red
-            )
-            spotifyLinkStatusText.text = if (spotifyLinksVerified) 
-                "✓ Spotify links will be intercepted" 
-            else
-                "✗ Configure Spotify links in app settings"
+            
+            if (spotifyHandler.isSpotifyInstalled()) {
+                // Step 2 not complete yet, show third step as unavailable
+                spotifyLinkStatusIcon.setBackgroundResource(R.drawable.status_grey)
+                spotifyLinkStatusText.text = "3. Configure Spotify links (complete step 2 first)"
+                spotifyLinkStatusText.setTextColor(context.getColor(android.R.color.darker_gray))
+                spotifyLinkLayout.isClickable = false
+                spotifyLinkLayout.isFocusable = false
+                spotifyLinkLayout.setOnClickListener(null)
+            } else {
+                // Step 2 complete, show real status of link interception
+                spotifyLinkStatusIcon.setBackgroundResource(
+                    if (spotifyLinksVerified) R.drawable.status_green else R.drawable.status_red
+                )
                 
-            // Hide YouTube Music link status (not relevant)
-            ytLinkLayout.visibility = View.GONE
+                if (spotifyLinksVerified) {
+                    // Success state
+                    spotifyLinkStatusText.text = "3. ✓ Spotify links will be intercepted"
+                    spotifyLinkStatusText.setTextColor(context.getColor(android.R.color.tab_indicator_text))
+                    spotifyLinkStatusText.paintFlags = spotifyLinkStatusText.paintFlags and android.graphics.Paint.UNDERLINE_TEXT_FLAG.inv()
+                } else {
+                    // Needs action - style as hyperlink
+                    spotifyLinkStatusText.text = "3. ✗ Configure Spotify links (tap to fix)"
+                    spotifyLinkStatusText.setTextColor(context.getColor(android.R.color.holo_blue_dark))
+                    spotifyLinkStatusText.paintFlags = spotifyLinkStatusText.paintFlags or android.graphics.Paint.UNDERLINE_TEXT_FLAG
+                }
+                
+                // Make the row clickable if links need to be configured
+                if (!spotifyLinksVerified) {
+                    spotifyLinkLayout.isClickable = true
+                    spotifyLinkLayout.isFocusable = true
+                    spotifyLinkLayout.setOnClickListener {
+                        linkVerificationManager.openAppLinkSettings()
+                    }
+                } else {
+                    spotifyLinkLayout.isClickable = false
+                    spotifyLinkLayout.isFocusable = false
+                    spotifyLinkLayout.setOnClickListener(null)
+                }
+            }
         }
+    }
+    
+    /**
+     * Checks if the link handling settings are correctly configured
+     * Shows a warning and offers to fix the settings if they're incorrect
+     */
+    private fun checkLinkHandlingConfiguration() {
+        val preferredPlatform = preferencesHelper.getPreferredPlatform()
         
-        // Setup App Settings button
-        val openSettingsButton = findViewById<Button>(R.id.openSettingsButton)
-        openSettingsButton.setOnClickListener {
-            linkVerificationManager.openAppLinkSettings()
+        // Only check in Spotify → YouTube Music mode
+        if (preferredPlatform == PreferencesHelper.PLATFORM_YOUTUBE_MUSIC) {
+            // Let the link verification manager check if our current settings are correct
+            val isCorrectlyConfigured = linkVerificationManager.ensureCorrectLinkHandling(preferredPlatform)
+            
+            if (!isCorrectlyConfigured) {
+                Log.d(TAG, "⚠️ Link handling is incorrectly configured for current mode")
+                
+                // Just call the function to open settings directly
+                linkVerificationManager.disableYouTubeMusicHandling()
+            }
         }
     }
     

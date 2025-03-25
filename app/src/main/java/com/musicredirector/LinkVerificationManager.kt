@@ -159,4 +159,100 @@ class LinkVerificationManager(private val context: Context) {
             return false
         }
     }
+
+    /**
+     * Disables this app as a handler for YouTube Music URLs
+     * This should be called when in Spotify to YouTube Music mode to prevent circular redirections
+     * On Android 10+, this modifies the domain verification settings for the app
+     */
+    fun disableYouTubeMusicHandling() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            Log.d(TAG, "🔥 Disabling YouTube Music link handling for this app")
+            try {
+                val intent = Intent(android.provider.Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS)
+                val uri = Uri.fromParts("package", context.packageName, null)
+                intent.data = uri
+                
+                // Show instructions to the user
+                Toast.makeText(
+                    context,
+                    "To prevent circular redirection, please disable music.youtube.com handling. " +
+                    "Tap 'Open by default' then uncheck music.youtube.com",
+                    Toast.LENGTH_LONG
+                ).show()
+                
+                // Open the settings
+                context.startActivity(intent)
+                
+                // Log in-app instruction for tracking
+                Log.d(TAG, "✓ Opened app link settings to disable YouTube Music handling")
+                return
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ Error opening app link settings: ${e.message}")
+            }
+        }
+        
+        // Fallback for older Android versions or if settings couldn't be opened
+        try {
+            val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+            intent.data = Uri.fromParts("package", context.packageName, null)
+            context.startActivity(intent)
+            
+            Toast.makeText(
+                context,
+                "To prevent circular redirection, please go to 'Open by default' and disable handling of music.youtube.com links",
+                Toast.LENGTH_LONG
+            ).show()
+            
+            Log.d(TAG, "✓ Opened app details settings as fallback")
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error opening app details settings: ${e.message}")
+            
+            // Last resort: Show a toast explaining what to do manually
+            Toast.makeText(
+                context,
+                "Please go to Settings > Apps > Music Redirector > Open by default and disable music.youtube.com handling",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+    
+    /**
+     * Checks if we need to disable YouTube Music link handling based on the current mode
+     * Returns true if handling was already properly set, false if user needs to change settings
+     */
+    fun ensureCorrectLinkHandling(preferredPlatform: String): Boolean {
+        val ytMusicDomain = "music.youtube.com"
+        val spotifyDomain = "open.spotify.com"
+        
+        // In Spotify to YouTube Music mode, we should NOT handle music.youtube.com links
+        if (preferredPlatform == PreferencesHelper.PLATFORM_YOUTUBE_MUSIC) {
+            // Check if we're currently handling YouTube Music links
+            val isHandlingYtMusic = isDomainVerifiedInSettings(ytMusicDomain)
+            
+            if (isHandlingYtMusic) {
+                Log.d(TAG, "⚠️ We're in Spotify→YT Music mode but still handling music.youtube.com links")
+                return false // User needs to change settings
+            } else {
+                Log.d(TAG, "✓ Correctly NOT handling music.youtube.com links in Spotify→YT Music mode")
+                return true // All good
+            }
+        }
+        // In YouTube Music to Spotify mode, we should handle both domains
+        else if (preferredPlatform == PreferencesHelper.PLATFORM_SPOTIFY) {
+            // We should be handling both domains
+            val isHandlingYtMusic = isDomainVerifiedInSettings(ytMusicDomain)
+            val isHandlingSpotify = isDomainVerifiedInSettings(spotifyDomain)
+            
+            if (!isHandlingYtMusic || !isHandlingSpotify) {
+                Log.d(TAG, "⚠️ We're in YT Music→Spotify mode but not handling all required domains")
+                return false // User needs to change settings
+            } else {
+                Log.d(TAG, "✓ Correctly handling all domains in YT Music→Spotify mode")
+                return true // All good
+            }
+        }
+        
+        return true // Default to true for any other case
+    }
 } 

@@ -98,7 +98,7 @@
                 android:layout_height="wrap_content"
                 android:background="#4B00E0"
                 android:padding="16dp"
-                android:text="Redirection Direction"
+                android:text="Choose Your Music Platform"
                 android:textAlignment="center"
                 android:textAppearance="?attr/textAppearanceHeadline6"
                 android:textColor="#FFFFFF"
@@ -120,7 +120,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Select redirection direction:"
+                        android:text="Which platform would you like to play your music on?"
                         android:textSize="16sp"
                         android:textColor="#333333"
                         android:layout_marginBottom="8dp"/>
@@ -186,6 +186,7 @@
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/setupStatusHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="#4B00E0"
@@ -196,263 +197,156 @@
                 android:textColor="#FFFFFF"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/setupStatusDescription"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:text="Complete the following to enable redirection:"
-                android:textSize="16sp"
-                android:textColor="#333333" />
-
-            <!-- YouTube Music Link Status -->
-            <LinearLayout
-                android:id="@+id/linkInterceptionLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@android:color/white"
-                android:clickable="false"
-                android:focusable="false"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="16dp">
-
-                <View
-                    android:id="@+id/linkInterceptionStatusIcon"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:background="@drawable/status_green"
-                    android:layout_marginEnd="16dp" />
-
-                <TextView
-                    android:id="@+id/linkInterceptionStatusText"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="YouTube Music links: Active"
-                    android:textSize="16sp"
-                    android:textColor="#333333" />
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:background="#E0E0E0" />
-                
-            <!-- Spotify Link Status -->
-            <LinearLayout
-                android:id="@+id/spotifyLinkInterceptionLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@android:color/white"
-                android:clickable="false"
-                android:focusable="false"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="16dp">
-
-                <View
-                    android:id="@+id/spotifyLinkInterceptionStatusIcon"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:background="@drawable/status_green"
-                    android:layout_marginEnd="16dp" />
-
-                <TextView
-                    android:id="@+id/spotifyLinkInterceptionStatusText"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Spotify links: Active"
-                    android:textSize="16sp"
-                    android:textColor="#333333" />
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:background="#E0E0E0" />
-
-            <!-- YouTube Music App Status -->
-            <LinearLayout
-                android:id="@+id/ytMusicStatusLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="?attr/selectableItemBackground"
-                android:clickable="false"
-                android:focusable="false"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="16dp">
-
-                <View
-                    android:id="@+id/ytMusicStatusIcon"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:background="@drawable/status_green"
-                    android:layout_marginEnd="16dp" />
-
-                <TextView
-                    android:id="@+id/ytMusicStatusText"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="YouTube Music app: Configured correctly"
-                    android:textSize="16sp"
-                    android:textColor="#333333" />
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:background="#E0E0E0" />
-                
-            <!-- Spotify App Status -->
-            <LinearLayout
-                android:id="@+id/spotifyStatusLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="?attr/selectableItemBackground"
-                android:clickable="false"
-                android:focusable="false"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="16dp">
-
-                <View
-                    android:id="@+id/spotifyStatusIcon"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:background="@drawable/status_green"
-                    android:layout_marginEnd="16dp" />
-
-                <TextView
-                    android:id="@+id/spotifyStatusText"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Spotify app: Configured correctly"
-                    android:textSize="16sp"
-                    android:textColor="#333333" />
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:background="#E0E0E0" />
-
-            <!-- Config status summary -->
             <LinearLayout
                 android:id="@+id/configStatusLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#E8F5E9"
-                android:visibility="visible"
-                android:padding="16dp"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:padding="16dp">
 
+                <!-- Status items will be shown here -->
                 <TextView
-                    android:id="@+id/configStatusText"
+                    android:id="@+id/setupStatusDescription"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="✅ All systems ready for redirection!"
-                    android:textStyle="bold"
-                    android:textSize="16sp"
-                    android:textColor="#2E7D32" />
-
-                <TextView
-                    android:id="@+id/configStatusDescription"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Your app is now properly configured to redirect links."
-                    android:textSize="14sp"
-                    android:textColor="#33691E" />
+                    android:layout_marginBottom="16dp"
+                    android:gravity="center"
+                    android:textColor="#333333"
+                    android:textSize="16sp" />
                     
-                <!-- Success Test Button -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/successTestButton"
+                <!-- YouTube Music Status (will be step 1 in one mode) -->
+                <LinearLayout
+                    android:id="@+id/ytMusicStatusLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="TRY IT OUT - TEST REDIRECTION"
-                    android:textAllCaps="true"
-                    android:textStyle="bold"
-                    android:paddingVertical="16dp"
-                    android:textSize="16sp"
-                    android:textColor="#FFFFFF"
-                    android:backgroundTint="#4B00E0"
-                    app:cornerRadius="8dp" />
-            </LinearLayout>
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="8dp"
+                    android:background="?attr/selectableItemBackground">
 
-            <!-- Warning status when configuration is incomplete -->
-            <LinearLayout
-                android:id="@+id/warningStatusLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:visibility="gone"
-                android:padding="16dp"
-                android:orientation="vertical">
+                    <View
+                        android:id="@+id/ytMusicStatusIcon"
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/status_red" />
 
-                <!-- Test Button inside warning layout -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/testButton"
+                    <TextView
+                        android:id="@+id/ytMusicStatusText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textColor="#333333"
+                        android:textSize="14sp" />
+                </LinearLayout>
+                
+                <!-- Spotify Status (will be step 1 in the other mode) -->
+                <LinearLayout
+                    android:id="@+id/spotifyStatusLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="CONFIGURATION INCOMPLETE"
-                    android:textAllCaps="true"
-                    android:textStyle="bold"
-                    android:paddingVertical="16dp"
-                    android:textSize="16sp"
-                    android:textColor="#FFFFFF"
-                    android:backgroundTint="#E65100"
-                    app:cornerRadius="8dp"
-                    android:enabled="false" />
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="8dp"
+                    android:background="?attr/selectableItemBackground">
+
+                    <View
+                        android:id="@+id/spotifyStatusIcon"
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/status_red" />
+
+                    <TextView
+                        android:id="@+id/spotifyStatusText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textColor="#333333"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <!-- Link Interception Status -->
+                <LinearLayout
+                    android:id="@+id/linkInterceptionLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="8dp"
+                    android:background="?attr/selectableItemBackground">
+
+                    <View
+                        android:id="@+id/linkInterceptionStatusIcon"
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/status_red" />
+
+                    <TextView
+                        android:id="@+id/linkInterceptionStatusText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textColor="#333333"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <!-- Spotify Link Interception Status -->
+                <LinearLayout
+                    android:id="@+id/spotifyLinkInterceptionLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="8dp"
+                    android:background="?attr/selectableItemBackground">
+
+                    <View
+                        android:id="@+id/spotifyLinkInterceptionStatusIcon"
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/status_red" />
+
+                    <TextView
+                        android:id="@+id/spotifyLinkInterceptionStatusText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textColor="#333333"
+                        android:textSize="14sp" />
+                </LinearLayout>
             </LinearLayout>
-                
-            <!-- Settings Button -->
-            <Button
-                android:id="@+id/openSettingsButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="16dp"
-                android:backgroundTint="#4B00E0"
-                android:text="CONFIGURE APP LINK SETTINGS"
-                android:textColor="#FFFFFF" />
-                
-            <!-- YouTube Music Settings Button -->
+
+            <!-- Settings Buttons -->
             <Button
                 android:id="@+id/openYTMusicSettingsButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="16dp"
-                android:backgroundTint="#E53935"
-                android:text="MANAGE YOUTUBE MUSIC SETTINGS"
-                android:textColor="#FFFFFF"
-                android:visibility="gone" />
-                
-            <!-- Spotify Settings Button -->
+                android:layout_margin="16dp"
+                android:text="Open YouTube Music Settings"
+                android:visibility="gone"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+
             <Button
                 android:id="@+id/openSpotifySettingsButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="16dp"
-                android:backgroundTint="#1DB954"
-                android:text="MANAGE SPOTIFY SETTINGS"
-                android:textColor="#FFFFFF"
-                android:visibility="gone" />
+                android:layout_margin="16dp"
+                android:text="Open Spotify Settings"
+                android:visibility="gone"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+
+            <!-- Test Button -->
+            <Button
+                android:id="@+id/mainTestButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:text="TEST REDIRECTION"
+                android:enabled="false"
+                style="@style/Widget.MaterialComponents.Button" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 

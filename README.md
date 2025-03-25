@@ -2,7 +2,7 @@
 
 Android app that redirects music links between platforms based on your preference.
 
-## Status (v1.4.0-b258)
+## Status (v1.5.0-b292)
 
 ### Working Features
 - ✅ Spotify to YouTube Music redirection (fully tested and stable)
@@ -41,19 +41,17 @@ Android app that redirects music links between platforms based on your preferenc
 
 ## Development Status
 
-Current build: 258
-Version: 1.4.0
+Current build: 292
+Version: 1.5.0
 
 ### Recent Updates
-- Improved UI with cleaner status indicators and better user interaction
-- Made error states directly actionable with "tap to fix" functionality
-- Removed redundant warning messages and improved visual hierarchy
-- Relocated the Configuration Incomplete status into the Setup Status card
-- Refactored extractor architecture with dedicated classes for each music platform
-- Improved domain verification detection to properly handle Android 11+ SELECTED domains
-- Added dedicated settings buttons and removed clickable status indicators
-- Fixed UI status display to accurately reflect Android link handling settings
-- Robust song information extraction using platform-specific methods
+- Improved circular redirection detection and prevention when using Spotify to YouTube Music mode
+- Fixed step ordering in the setup UI to ensure logical progression (1-2-3)
+- Enhanced YouTube Music detection to properly handle disabled apps
+- Added fallback methods for YouTube Music launching when URI schemes aren't supported
+- Automated configuration of link handling settings based on the selected mode
+- Improved error messages with clear guidance for users
+- Fixed several UI inconsistencies and polished the overall user experience
 
 ### Next Steps
 - Additional testing of Shazam link handling
@@ -61,6 +59,15 @@ Version: 1.4.0
 - User feedback collection and bug fixes
 
 ## Changelog
+
+### v1.5.0-b292 (Build 292) - March 25, 2024
+- Fixed step ordering in setup UI to ensure logical 1-2-3 progression
+- Added automatic detection and prevention of circular redirections
+- Implemented fallback methods for YouTube Music launching
+- Fixed YouTube Music detection to correctly identify enabled vs. installed state
+- Improved error handling with more informative messages
+- Added vibration feedback for better user interaction
+- Enhanced Spotify uninstall process with direct app info page opening
 
 ### v1.4.0-b258 (Build 258) - March 25, 2024
 - Streamlined UI with directly clickable status indicators for faster fixes
