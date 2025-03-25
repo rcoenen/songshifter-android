@@ -1,6 +1,6 @@
 ---
 description: Rules for the Music Redirector Android app
-globs: 
+globs: ["**/*.kt", "**/*.xml", "**/*.gradle", "**/AndroidManifest.xml", "**/build.gradle"]
 alwaysApply: true
 ---
 ACK COMMANDER! (Running on GPT-4)
