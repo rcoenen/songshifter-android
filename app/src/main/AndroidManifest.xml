@@ -82,6 +82,22 @@
                 <data android:pathPrefix="/watch" />
             </intent-filter>
             
+            <!-- YouTube Music Direct URI Handler -->
+            <intent-filter android:priority="1">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="youtube-music" />
+            </intent-filter>
+            
+            <!-- Spotify Direct URI Handler -->
+            <intent-filter android:priority="1">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="spotify" />
+            </intent-filter>
+            
             <!-- Shazam Link Handler -->
             <intent-filter android:priority="999">
                 <action android:name="android.intent.action.VIEW" />
@@ -97,6 +113,11 @@
             android:name=".SettingsActivity"
             android:label="@string/settings"
             android:parentActivityName=".MainActivity" />
+
+        <activity
+            android:name=".ConfigurationHelpActivity"
+            android:label="Link Handling Configuration"
+            android:parentActivityName=".SettingsActivity" />
 
     </application>
 </manifest> 

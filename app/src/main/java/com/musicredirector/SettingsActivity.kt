@@ -32,6 +32,11 @@ class SettingsActivity : AppCompatActivity() {
         private lateinit var youTubeMusicPreference: androidx.preference.SwitchPreferenceCompat
         private lateinit var shazamPreference: androidx.preference.SwitchPreferenceCompat
         
+        // Configuration help preferences
+        private lateinit var configInstructionsPreference: androidx.preference.Preference
+        private lateinit var checkConfigurationPreference: androidx.preference.Preference
+        private lateinit var openAndroidSettingsPreference: androidx.preference.Preference
+        
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             setPreferencesFromResource(R.xml.preferences, rootKey)
             
@@ -42,6 +47,22 @@ class SettingsActivity : AppCompatActivity() {
             spotifyPreference = findPreference(PreferencesHelper.KEY_ENABLE_SPOTIFY)!!
             youTubeMusicPreference = findPreference(PreferencesHelper.KEY_ENABLE_YOUTUBE_MUSIC)!!
             shazamPreference = findPreference(PreferencesHelper.KEY_ENABLE_SHAZAM)!!
+            
+            // Get the configuration help preferences
+            configInstructionsPreference = findPreference("config_instructions")!!
+            checkConfigurationPreference = findPreference("check_configuration")!!
+            openAndroidSettingsPreference = findPreference("open_android_settings")!!
+            
+            // Set up configuration help listeners
+            checkConfigurationPreference.setOnPreferenceClickListener {
+                checkConfiguration()
+                true
+            }
+            
+            openAndroidSettingsPreference.setOnPreferenceClickListener {
+                openAppLinkSettings()
+                true
+            }
         }
         
         override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -118,6 +139,52 @@ class SettingsActivity : AppCompatActivity() {
                     platformBanner.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.black))
                 }
             }
+        }
+        
+        /**
+         * Opens the Android app link settings for this app
+         */
+        private fun openAppLinkSettings() {
+            val intent = android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = android.net.Uri.parse("package:${requireContext().packageName}")
+                addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(intent)
+        }
+        
+        /**
+         * Checks if the current configuration matches the user's preferences
+         */
+        private fun checkConfiguration() {
+            val preferencesHelper = PreferencesHelper(requireContext())
+            val preferredPlatform = preferencesHelper.getPreferredPlatform()
+            
+            // Create a message based on the preferred platform
+            val message = if (preferredPlatform == PreferencesHelper.PLATFORM_SPOTIFY) {
+                "Your preferred platform is set to Spotify.\n\n" +
+                "For this to work correctly:\n\n" +
+                "1. Music Redirector should NOT handle Spotify links\n" +
+                "2. Music Redirector SHOULD handle YouTube Music links\n\n" +
+                "This ensures YouTube Music links can be redirected to Spotify.\n\n" +
+                "Would you like to open Android settings to configure this?"
+            } else {
+                "Your preferred platform is set to YouTube Music.\n\n" +
+                "For this to work correctly:\n\n" +
+                "1. Music Redirector should NOT handle YouTube Music links\n" +
+                "2. Music Redirector SHOULD handle Spotify links\n\n" +
+                "This ensures Spotify links can be redirected to YouTube Music.\n\n" +
+                "Would you like to open Android settings to configure this?"
+            }
+            
+            // Show the dialog
+            androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle("Configuration Check")
+                .setMessage(message)
+                .setPositiveButton("Open Settings") { _, _ ->
+                    openAppLinkSettings()
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
         }
     }
 } 

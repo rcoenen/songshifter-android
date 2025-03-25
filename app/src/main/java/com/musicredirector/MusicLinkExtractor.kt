@@ -68,6 +68,39 @@ class MusicLinkExtractor(private val context: Context) {
                 else -> "https://music.youtube.com/search?q=$encodedQuery" // Default to YouTube Music
             }
         }
+
+        /**
+         * Builds a direct app URI for the target platform using song info.
+         * This uses the native app URI schemes instead of web URLs to avoid redirect issues.
+         *
+         * @param songInfo The song information to search for
+         * @param targetPlatform The platform to build the URI for
+         * @return A native app URI for direct app-to-app communication
+         */
+        fun buildDirectAppUri(songInfo: SongInfo, targetPlatform: String): String {
+            // If we have both title and artist, use them
+            val searchQuery = if (songInfo.artist.isNotBlank()) {
+                "${songInfo.title} ${songInfo.artist}"
+            } else {
+                // If we only have title, use it alone but add "song" to improve results
+                "${songInfo.title} song"
+            }
+            val encodedQuery = Uri.encode(searchQuery.trim())
+            
+            return when (targetPlatform) {
+                PreferencesHelper.PLATFORM_SPOTIFY -> {
+                    // Try multiple Spotify URI formats in order of preference
+                    val uris = listOf(
+                        "spotify://search/$encodedQuery",  // Modern format
+                        "spotify:search:$encodedQuery",    // Classic format
+                        "spotify:app:search:$encodedQuery" // Legacy format
+                    )
+                    uris[0] // Start with the modern format
+                }
+                PreferencesHelper.PLATFORM_YOUTUBE_MUSIC -> "youtube-music://search?q=$encodedQuery"
+                else -> "youtube-music://search?q=$encodedQuery" // Default to YouTube Music
+            }
+        }
     }
     
     /**

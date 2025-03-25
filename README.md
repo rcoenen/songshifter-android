@@ -2,7 +2,7 @@
 
 Android app that redirects music links between platforms based on your preference.
 
-## Status (v1.3.1-b223)
+## Status (v1.4.0-b258)
 
 ### Working Features
 - ✅ Spotify to YouTube Music redirection (fully tested and stable)
@@ -41,10 +41,14 @@ Android app that redirects music links between platforms based on your preferenc
 
 ## Development Status
 
-Current build: 223
-Version: 1.3.1
+Current build: 258
+Version: 1.4.0
 
 ### Recent Updates
+- Improved UI with cleaner status indicators and better user interaction
+- Made error states directly actionable with "tap to fix" functionality
+- Removed redundant warning messages and improved visual hierarchy
+- Relocated the Configuration Incomplete status into the Setup Status card
 - Refactored extractor architecture with dedicated classes for each music platform
 - Improved domain verification detection to properly handle Android 11+ SELECTED domains
 - Added dedicated settings buttons and removed clickable status indicators
@@ -57,6 +61,13 @@ Version: 1.3.1
 - User feedback collection and bug fixes
 
 ## Changelog
+
+### v1.4.0-b258 (Build 258) - March 25, 2024
+- Streamlined UI with directly clickable status indicators for faster fixes
+- Removed redundant warning messages and improved visual hierarchy
+- Added "tap to fix" guidance for clearer user interaction
+- Integrated Configuration Incomplete status within Setup Status section
+- Fixed layout issues to ensure key elements are visible without scrolling
 
 ### v1.3.0-b223 (Build 223) - March 24, 2024
 - Fixed domain verification detection and UI display to properly handle SELECTED domains

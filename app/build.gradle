@@ -46,12 +46,12 @@ def getBuildNumber() {
 }
 
 android {
-    namespace 'com.musicredirector'
+    namespace "com.musicredirector"
     compileSdk 34
     defaultConfig {
         applicationId "com.musicredirector"
-        minSdkVersion 24
-        targetSdkVersion 34
+        minSdk 21
+        targetSdk 34
         
         // Use single build number for both versionCode and versionName
         def buildNumber = getBuildNumber()

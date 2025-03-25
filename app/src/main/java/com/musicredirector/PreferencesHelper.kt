@@ -4,6 +4,9 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
 
+/**
+ * Helper class to manage app preferences
+ */
 class PreferencesHelper(context: Context) {
     private val prefs: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     
@@ -41,12 +44,21 @@ class PreferencesHelper(context: Context) {
         return prefs.getBoolean(KEY_ENABLE_ALL, true)
     }
     
+    /**
+     * Gets the user's preferred music platform
+     */
     fun getPreferredPlatform(): String {
-        return prefs.getString(KEY_PREFERRED_PLATFORM, PLATFORM_YOUTUBE_MUSIC) ?: PLATFORM_YOUTUBE_MUSIC
+        return prefs.getString(KEY_PREFERRED_PLATFORM, PLATFORM_YOUTUBE_MUSIC)
+            ?: PLATFORM_YOUTUBE_MUSIC
     }
     
+    /**
+     * Sets the user's preferred music platform
+     */
     fun setPreferredPlatform(platform: String) {
-        prefs.edit().putString(KEY_PREFERRED_PLATFORM, platform).apply()
+        prefs.edit()
+            .putString(KEY_PREFERRED_PLATFORM, platform)
+            .apply()
     }
     
     fun isSpotifyRedirectionEnabled(): Boolean {

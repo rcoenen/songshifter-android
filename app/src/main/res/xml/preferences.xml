@@ -31,6 +31,31 @@
     </PreferenceCategory>
 
     <PreferenceCategory
+        android:key="category_config_help"
+        android:title="Configuration Help">
+        
+        <Preference
+            android:key="config_instructions"
+            android:title="Link Handling Configuration"
+            android:summary="Important: Set up correct link handling for your preferred platform">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:targetPackage="com.musicredirector"
+                android:targetClass="com.musicredirector.ConfigurationHelpActivity" />
+        </Preference>
+        
+        <Preference
+            android:key="check_configuration"
+            android:title="Check Current Configuration"
+            android:summary="Verify your Android settings match your preferences" />
+            
+        <Preference
+            android:key="open_android_settings"
+            android:title="Open Link Handling Settings"
+            android:summary="Configure which apps handle which links" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
         android:title="@string/pref_category_source_platforms"
         app:iconSpaceReserved="false">
 
