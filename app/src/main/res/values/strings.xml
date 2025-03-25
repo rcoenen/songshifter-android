@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Binus</string>
+    <string name="app_name">SongShifter</string>
     <string name="settings">Settings</string>
     
     <!-- Settings Screen -->
@@ -20,8 +20,8 @@
     <string name="pref_enable_shazam_summary">Redirect Shazam links to preferred platform</string>
     
     <!-- First Run Dialog -->
-    <string name="first_run_title">Welcome to Binus</string>
-    <string name="first_run_message">This app helps you redirect music links from one platform to another.\n\nTo use it, you need to set it as the default handler for supported music links. When you click on a music link, you\'ll be asked which app to open it with. Choose \"Binus\" and select \"Always\" to make it your default handler.</string>
+    <string name="first_run_title">Welcome to SongShifter</string>
+    <string name="first_run_message">This app helps you redirect music links from one platform to another.\n\nTo use it, you need to set it as the default handler for supported music links. When you click on a music link, you\'ll be asked which app to open it with. Choose \"SongShifter\" and select \"Always\" to make it your default handler.</string>
     <string name="first_run_button">Got it</string>
     
     <!-- Error Messages -->

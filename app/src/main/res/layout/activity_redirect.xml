@@ -32,7 +32,7 @@
             android:textColor="@android:color/white"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:text="BINUS Music Bridge" />
+            android:text="SongShifter" />
 
         <ProgressBar
             android:id="@+id/progress_bar"

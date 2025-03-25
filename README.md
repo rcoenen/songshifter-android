@@ -1,4 +1,4 @@
-# Binus Music Redirector
+# SongShifter
 
 Android app that redirects music links between platforms based on your preference.
 
@@ -112,7 +112,7 @@ Version: 1.5.0
 - Basic UI and navigation
 
 ### v1.0-b50 (Build 50) - March 21, 2024
-- First working version of Binus with Material Design 3 UI
+- First working version of SongShifter with Material Design 3 UI
 - Spotify to YouTube Music redirection prototype
 - Basic functionality and concept demonstration
 

@@ -34,13 +34,13 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:src="@mipmap/ic_launcher"
-            android:contentDescription="BINUS app icon" />
+            android:contentDescription="SongShifter app icon" />
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="BINUS Music Bridge"
+            android:text="SongShifter"
             android:textSize="20sp"
             android:textColor="#4B00E0"
             android:textStyle="bold"

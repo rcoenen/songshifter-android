@@ -33,7 +33,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Binus Music Bridge"
+            android:text="SongShifter"
             android:textSize="22sp"
             android:textColor="#4B00E0"
             android:textStyle="bold"

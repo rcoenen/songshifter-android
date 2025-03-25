@@ -1,4 +1,4 @@
-package com.musicredirector
+package com.songshifter
 
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -143,7 +143,7 @@ class RedirectActivity : AppCompatActivity() {
                     // Find a browser that is not our app
                     val browserPackage = browserActivities.firstOrNull { 
                         it.activityInfo.packageName != packageName &&
-                        !it.activityInfo.packageName.contains("musicredirector")
+                        !it.activityInfo.packageName.contains("songshifter")
                     }?.activityInfo?.packageName
                     
                     if (browserPackage != null) {
@@ -298,7 +298,7 @@ class RedirectActivity : AppCompatActivity() {
                                         val wouldCauseCircularRedirection = resolveInfoList.any { resolveInfo ->
                                             resolveInfo.activityInfo.packageName == packageName ||
                                             resolveInfo.activityInfo.packageName.contains("songshifter") ||
-                                            resolveInfo.activityInfo.packageName.contains("musicredirector")
+                                            resolveInfo.activityInfo.packageName.contains("songshifter")
                                         }
                                         
                                         if (wouldCauseCircularRedirection) {
@@ -530,7 +530,7 @@ class RedirectActivity : AppCompatActivity() {
                     // Find a browser that is not our app
                     val browserPackage = browserActivities.firstOrNull { 
                         it.activityInfo.packageName != packageName &&
-                        !it.activityInfo.packageName.contains("musicredirector")
+                        !it.activityInfo.packageName.contains("songshifter")
                     }?.activityInfo?.packageName
                     
                     if (browserPackage != null) {
