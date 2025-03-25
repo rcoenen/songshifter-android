@@ -22,6 +22,7 @@ Android app that redirects music links between platforms based on your preferenc
 - **Android 11 (API 30) or higher recommended** for proper domain verification handling
 - Android 7.0 (API 24) minimum required for basic functionality
 - YouTube Music must be running in the background for YouTube Music redirections to work
+- **YouTube Music requires an initial cold start/warm-up** - first search may fail, requiring a second attempt
 - App needs permission to handle links (can be configured in system settings)
 - Tested on Pixel 6a with Android 15 (development target)
 
@@ -54,6 +55,8 @@ Version: 1.5.0
 - Fixed several UI inconsistencies and polished the overall user experience
 
 ### Next Steps
+- Enhance detection of YouTube Music cold start state with user guidance
+- Add toast message to inform users when YouTube Music needs a "warm-up" launch
 - Additional testing of Shazam link handling
 - Edge case testing with various link formats
 - User feedback collection and bug fixes
