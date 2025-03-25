@@ -1,10 +1,11 @@
-package com.musicredirector
+package com.musicredirector.extractors
 
 import android.content.Context
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
+import com.musicredirector.SongInfo
 
 /**
  * Dedicated extractor for Shazam links.

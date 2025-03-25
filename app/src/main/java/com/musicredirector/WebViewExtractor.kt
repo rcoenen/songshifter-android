@@ -2,6 +2,9 @@ package com.musicredirector
 
 import android.content.Context
 import android.util.Log
+import com.musicredirector.extractors.YouTubeMusicExtractor
+import com.musicredirector.extractors.SpotifyExtractor
+import com.musicredirector.extractors.ShazamExtractor
 
 /**
  * Factory class that delegates extraction to platform-specific extractors.

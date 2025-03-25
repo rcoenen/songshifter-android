@@ -1,4 +1,4 @@
-package com.musicredirector
+package com.musicredirector.extractors
 
 import android.content.Context
 import android.util.Log
@@ -13,6 +13,7 @@ import org.json.JSONObject
 import android.webkit.CookieManager
 import java.util.concurrent.atomic.AtomicBoolean
 import android.app.Activity
+import com.musicredirector.SongInfo
 
 /**
  * Dedicated extractor for YouTube Music links.
