@@ -2,7 +2,7 @@
 
 Android app that redirects music links between platforms based on your preference.
 
-## Status (v1.3.0 - Build 223)
+## Status (v1.3.1-b223)
 
 ### Working Features
 - ✅ Spotify to YouTube Music redirection (fully tested and stable)
@@ -19,9 +19,19 @@ Android app that redirects music links between platforms based on your preferenc
 - ⚠️ Edge cases with various link formats
 
 ### Known Requirements
+- **Android 11 (API 30) or higher recommended** for proper domain verification handling
+- Android 7.0 (API 24) minimum required for basic functionality
 - YouTube Music must be running in the background for YouTube Music redirections to work
 - App needs permission to handle links (can be configured in system settings)
-- Android 7.0 (API 24) or higher required
+- Tested on Pixel 6a with Android 15 (development target)
+
+## System Compatibility
+| Android Version | Compatibility | Notes |
+|-----------------|---------------|-------|
+| Android 11+ (API 30+) | ✅ Full | All features work including accurate domain verification status |
+| Android 8-10 (API 26-29) | ⚠️ Partial | Basic functionality works, but domain verification status may be inaccurate |
+| Android 7 (API 24-25) | ⚠️ Limited | Core functionality only, UI may have inconsistencies |
+| Android 6 or lower | ❌ Not Supported | App will not function correctly |
 
 ## Usage
 
@@ -32,14 +42,14 @@ Android app that redirects music links between platforms based on your preferenc
 ## Development Status
 
 Current build: 223
-Version: 1.3.0
+Version: 1.3.1
 
 ### Recent Updates
+- Refactored extractor architecture with dedicated classes for each music platform
 - Improved domain verification detection to properly handle Android 11+ SELECTED domains
 - Added dedicated settings buttons and removed clickable status indicators
 - Fixed UI status display to accurately reflect Android link handling settings
-- Robust song information extraction using embed pages
-- Stable link interception and redirection system
+- Robust song information extraction using platform-specific methods
 
 ### Next Steps
 - Additional testing of Shazam link handling
