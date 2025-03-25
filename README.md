@@ -48,39 +48,39 @@ Version: 1.3.0
 
 ## Changelog
 
-### v1.3.0 (Build 223) - March 24, 2024
+### v1.3.0-b223 (Build 223) - March 24, 2024
 - Fixed domain verification detection and UI display to properly handle SELECTED domains
 - Added dedicated settings buttons and removed clickable status indicators
 - Improved error handling for link verification status
 - Fixed discrepancy between UI status and actual Android settings
 
-### v1.2.0 (Build ~190) - March 24, 2024
+### v1.2.0-b190 (Build 190) - March 24, 2024
 - Enhanced YouTube Music integration with app state detection
 - Improved link handling with better error reporting
 - UI refinements and stability improvements
 
-### v1.1.0 (Build 145) - March 22-23, 2024
+### v1.1.0-b145 (Build 145) - March 22-23, 2024
 - Stable Spotify to YouTube Music redirection with improved UI
 - Added Shazam integration (needs further testing)
 - Implemented YouTube Music to Spotify redirection
 - Cleaner UI with proper warning banners and test functionality
 
-### v1.1 (Build ~130) - March 22, 2024
+### v1.1-b130 (Build 130) - March 22, 2024
 - Added YouTube Music to Spotify redirection with deep linking support
 - Improved error handling and user feedback
 - Enhanced UI for better user experience
 
-### v1.0.8 (Build ~100) - March 21-22, 2024
+### v1.0.8-b100 (Build 100) - March 21-22, 2024
 - First working version that successfully redirects Spotify links to YouTube Music
 - Basic UI with functional redirections
 - Core functionality established
 
-### v1.0.0 (Build ~80) - March 21, 2024
+### v1.0.0-b80 (Build 80) - March 21, 2024
 - First stable version using Spotify embed page extraction
 - Initial implementation of link handling
 - Basic UI and navigation
 
-### v1.0 (Build ~50) - March 21, 2024
+### v1.0-b50 (Build 50) - March 21, 2024
 - First working version of Binus with Material Design 3 UI
 - Spotify to YouTube Music redirection prototype
 - Basic functionality and concept demonstration
