@@ -27,6 +27,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var preferencesHelper: PreferencesHelper
     
     private var youTubeMusicWarningDialog: AlertDialog? = null
+    private var youTubeMusicDisabledWarningDialog: AlertDialog? = null
     
     private val EXAMPLE_SPOTIFY_URL = "https://open.spotify.com/track/6ciGSCeUiA46HANRzcq8o0?si=hNwYN8OsReahI3JecgRaFg"
     private val EXAMPLE_YOUTUBE_MUSIC_URL = "https://music.youtube.com/watch?v=BsoaesiWaCo&si=W2A3SeZGupYgMApr"
@@ -74,9 +75,14 @@ class MainActivity : AppCompatActivity() {
                 else -> PreferencesHelper.PLATFORM_YOUTUBE_MUSIC
             }
             
-            // If switching to YouTube Music, dismiss any warning dialog
+            // If switching to YouTube Music
             if (newPlatform == PreferencesHelper.PLATFORM_YOUTUBE_MUSIC) {
                 youTubeMusicWarningDialog?.dismiss()
+                
+                // Check if YouTube Music is installed but disabled
+                if (isYouTubeMusicInstalled() && isYouTubeMusicDisabled()) {
+                    showYouTubeMusicDisabledWarningDialog()
+                }
             }
             // If switching to Spotify, show warning if needed
             else if (newPlatform == PreferencesHelper.PLATFORM_SPOTIFY && 
@@ -97,12 +103,16 @@ class MainActivity : AppCompatActivity() {
             PreferencesHelper.PLATFORM_SPOTIFY -> platformRadioGroup.check(R.id.radio_spotify)
         }
         
-        // Show initial warning if needed
+        // Show initial warnings if needed
         if (platform == PreferencesHelper.PLATFORM_SPOTIFY && 
             isYouTubeMusicInstalled() && 
             !isYouTubeMusicDisabled() &&
             isYouTubeMusicHandlingLinks()) {
             showYouTubeMusicWarningDialog()
+        } else if (platform == PreferencesHelper.PLATFORM_YOUTUBE_MUSIC &&
+            isYouTubeMusicInstalled() && 
+            isYouTubeMusicDisabled()) {
+            showYouTubeMusicDisabledWarningDialog()
         }
     }
     
@@ -140,6 +150,41 @@ class MainActivity : AppCompatActivity() {
             .create()
             
         youTubeMusicWarningDialog?.show()
+    }
+    
+    /**
+     * Shows a warning dialog when YouTube Music is selected as the preferred platform
+     * but the YouTube Music app is disabled.
+     */
+    private fun showYouTubeMusicDisabledWarningDialog() {
+        // First check if YouTube Music is actually disabled
+        if (!isYouTubeMusicDisabled()) {
+            return
+        }
+        
+        // Dismiss any existing dialog
+        youTubeMusicDisabledWarningDialog?.dismiss()
+        
+        youTubeMusicDisabledWarningDialog = MaterialAlertDialogBuilder(this)
+            .setTitle("⚠️ YouTube Music Disabled")
+            .setMessage("You've selected YouTube Music as your preferred platform, but the YouTube Music app is currently disabled. You need to enable it for the app to function properly.\n\nWould you like to open YouTube Music's settings now?")
+            .setPositiveButton("Open Settings") { dialog, _ ->
+                try {
+                    openYouTubeMusicSettings()
+                } catch (e: Exception) {
+                    Toast.makeText(this, 
+                        "Couldn't open YouTube Music settings. Please enable it manually.", 
+                        Toast.LENGTH_LONG).show()
+                }
+                dialog.dismiss()
+            }
+            .setNegativeButton("Later") { dialog, _ -> 
+                dialog.dismiss()
+            }
+            .setCancelable(true)
+            .create()
+            
+        youTubeMusicDisabledWarningDialog?.show()
     }
     
     private fun setupTestButton() {
@@ -190,29 +235,34 @@ class MainActivity : AppCompatActivity() {
     }
     
     /**
-     * Research on detecting if YouTube Music has link handling enabled or disabled:
-     * 
-     * Android doesn't provide a direct API to check if a specific app has link handling
-     * enabled or disabled for specific domains. Our current approach uses PackageManager
-     * to query which apps respond to a test URI, but this has limitations:
-     * 
-     * 1. It shows all apps that CAN handle the URI, not necessarily which one will
-     *    be chosen by Android as the default handler
-     * 
-     * 2. Android's app link handling system has become more complex in newer versions,
-     *    with verification states, user preferences, and system overrides
-     * 
-     * 3. The only truly reliable approach is to use queryIntentActivities and check
-     *    if YouTube Music is in the list of potential handlers - which is what we're
-     *    doing now
-     * 
-     * The core issue is that we're trying to detect whether YouTube Music is handling
-     * its own links, which requires checking Android's internal app link resolution system
-     * without having privileged access to that system.
+     * Checks if YouTube Music is handling its own links.
+     * The app can't handle links if it's disabled, so this returns false in that case.
+     * Otherwise, checks if YouTube Music is in the list of handlers for music.youtube.com URLs.
      */
     private fun isYouTubeMusicHandlingLinks(): Boolean {
-        // YouTube Music is disabled (from your screenshot), so it cannot handle links
-        return false
+        // YouTube Music can't handle links if it's disabled
+        if (isYouTubeMusicDisabled()) {
+            return false
+        }
+        
+        // Otherwise, check if it's in the list of handlers
+        try {
+            val pm = packageManager
+            val testUri = Uri.parse("https://music.youtube.com/watch?v=test")
+            val testIntent = Intent(Intent.ACTION_VIEW, testUri)
+            
+            // Query for activities that can handle this URI
+            val resolveInfoList = pm.queryIntentActivities(testIntent, PackageManager.MATCH_DEFAULT_ONLY)
+            
+            // Check if YouTube Music is in the list of handlers
+            return resolveInfoList.any { resolveInfo ->
+                resolveInfo.activityInfo.packageName == "com.google.android.apps.youtube.music"
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking if YouTube Music handles links: ${e.message}")
+            e.printStackTrace()
+            return false
+        }
     }
     
     private fun openYouTubeMusicSettings() {
@@ -276,6 +326,28 @@ class MainActivity : AppCompatActivity() {
     
     private fun checkLinkInterceptionStatus() {
         val preferredPlatform = preferencesHelper.getPreferredPlatform()
+        
+        // Check if YouTube Music is selected but disabled
+        val youTubeMusicSelected = preferredPlatform == PreferencesHelper.PLATFORM_YOUTUBE_MUSIC
+        val youTubeMusicDisabled = isYouTubeMusicInstalled() && isYouTubeMusicDisabled()
+        
+        // Show a warning banner if YouTube Music is selected but disabled
+        val ytMusicDisabledWarningView = findViewById<View>(R.id.ytMusicDisabledWarningCard)
+        if (ytMusicDisabledWarningView != null) {
+            if (youTubeMusicSelected && youTubeMusicDisabled) {
+                ytMusicDisabledWarningView.visibility = View.VISIBLE
+                
+                // Add button to open YouTube Music settings
+                val enableYTMusicButton = findViewById<Button>(R.id.enableYTMusicButton)
+                if (enableYTMusicButton != null) {
+                    enableYTMusicButton.setOnClickListener {
+                        openYouTubeMusicSettings()
+                    }
+                }
+            } else {
+                ytMusicDisabledWarningView.visibility = View.GONE
+            }
+        }
         
         // Check verification status for both domains
         val actualYTMusicLinksVerified = isDomainVerifiedInSettings("music.youtube.com")

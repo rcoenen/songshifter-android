@@ -240,6 +240,54 @@
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
+    <!-- YouTube Music Disabled Warning -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/ytMusicDisabledWarningCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="2dp"
+        app:contentPadding="0dp"
+        android:backgroundTint="#FFEBEE"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/statusDashboard"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+            
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="⚠️ YouTube Music App is Disabled"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="#D32F2F"/>
+                
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="You've selected YouTube Music as your preferred platform, but the YouTube Music app is currently disabled. You need to enable it for proper functionality."
+                android:textSize="14sp"
+                android:textColor="#333333"/>
+                
+            <Button
+                android:id="@+id/enableYTMusicButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:backgroundTint="#D32F2F"
+                android:text="Enable YouTube Music App"
+                android:textColor="#FFFFFF"/>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
     <androidx.cardview.widget.CardView
         android:id="@+id/statusCard"
         android:layout_width="0dp"
@@ -251,7 +299,7 @@
         android:backgroundTint="@android:color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/statusDashboard">
+        app:layout_constraintTop_toBottomOf="@+id/ytMusicDisabledWarningCard">
 
         <LinearLayout
             android:layout_width="match_parent"
