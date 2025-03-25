@@ -12,6 +12,7 @@ import kotlin.coroutines.resume
 import org.json.JSONObject
 import android.webkit.CookieManager
 import java.util.concurrent.atomic.AtomicBoolean
+import android.app.Activity
 
 /**
  * Dedicated extractor for YouTube Music links.
@@ -80,126 +81,72 @@ class YouTubeMusicExtractor(private val context: Context) {
         """
     }
 
+    private var extractionCompleted = false
+
     suspend fun extract(url: String): SongInfo? = withContext(Dispatchers.Main) {
         Log.d(TAG, "Starting extraction for URL: $url")
-        
-        try {
-            // Validate URL
-            if (!url.contains("music.youtube.com")) {
-                Log.e(TAG, "Invalid YouTube Music URL")
-                return@withContext null
+        suspendCancellableCoroutine { continuation ->
+            val webView = WebView(context)
+            webView.settings.apply {
+                javaScriptEnabled = true
+                userAgentString = USER_AGENT
+                domStorageEnabled = true
             }
             
-            return@withContext withTimeoutOrNull(EXTRACTION_TIMEOUT_MS) {
-                suspendCancellableCoroutine { continuation ->
-                    val hasExtracted = AtomicBoolean(false)
-                    
-                    try {
-                        val webView = WebView(context).apply {
-                            settings.apply {
-                                javaScriptEnabled = true
-                                domStorageEnabled = true
-                                databaseEnabled = true
-                                mediaPlaybackRequiresUserGesture = false
-                                
-                                // Match working script's user agent exactly
-                                userAgentString = USER_AGENT
-                                
-                                // Set desktop viewport size
-                                useWideViewPort = true
-                                loadWithOverviewMode = true
-                                
-                                // Set initial scale to match desktop viewport
-                                setInitialScale(100)
-                                
-                                // Clear cache and use no-cache mode
-                                cacheMode = android.webkit.WebSettings.LOAD_NO_CACHE
-                            }
-                            
-                            // Clear cookies
-                            CookieManager.getInstance().apply {
-                                removeAllCookies(null)
-                                flush()
-                            }
-                            
-                            // Clear any existing cache
-                            clearCache(true)
-                            
-                            webViewClient = object : WebViewClient() {
-                                override fun onPageFinished(view: WebView?, url: String?) {
-                                    Log.d(TAG, "Page finished loading, starting extraction attempts")
-                                    
-                                    // Start checking if page is ready
-                                    CoroutineScope(Dispatchers.Main).launch {
-                                        delay(INITIAL_DELAY_MS)
-                                        attemptExtraction(view, continuation, hasExtracted, 0)
-                                    }
-                                }
-                                
-                                override fun onReceivedError(
-                                    view: WebView?,
-                                    request: WebResourceRequest?,
-                                    error: WebResourceError?
-                                ) {
-                                    Log.e(TAG, "WebView error: ${error?.description}")
-                                    if (!hasExtracted.get()) {
-                                        hasExtracted.set(true)
-                                        continuation.resume(null)
-                                    }
-                                }
-                            }
+            val hasExtracted = AtomicBoolean(false)
+            extractionCompleted = false
+            
+            webView.webViewClient = object : WebViewClient() {
+                override fun onReceivedError(
+                    view: WebView?,
+                    request: WebResourceRequest?,
+                    error: WebResourceError?
+                ) {
+                    // Only log errors if extraction hasn't completed yet
+                    if (!extractionCompleted && !hasExtracted.get()) {
+                        Log.e(TAG, "WebView error: ${error?.description}")
+                        if (!hasExtracted.get()) {
+                            hasExtracted.set(true)
+                            continuation.resume(null)
                         }
-                        
-                        Log.d(TAG, "Loading URL with desktop Chrome emulation")
-                        webView.loadUrl(url)
-                        
-                        continuation.invokeOnCancellation {
-                            Log.d(TAG, "Extraction cancelled, cleaning up")
-                            webView.destroy()
-                        }
-                        
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Error in WebView setup: ${e.message}")
-                        continuation.resume(null)
                     }
                 }
-            } ?: run {
-                Log.e(TAG, "Extraction timed out after ${EXTRACTION_TIMEOUT_MS}ms")
-                null
+                
+                override fun onPageFinished(view: WebView?, url: String?) {
+                    Log.d(TAG, "Page finished loading, starting extraction attempts")
+                    startExtractionAttempts(webView, hasExtracted, continuation)
+                }
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error during extraction: ${e.message}")
-            null
+            
+            Log.d(TAG, "Loading URL with desktop Chrome emulation")
+            webView.loadUrl(url)
+            
+            continuation.invokeOnCancellation {
+                webView.stopLoading()
+                (context as? Activity)?.runOnUiThread {
+                    webView.destroy()
+                }
+            }
         }
     }
 
-    private fun attemptExtraction(
-        webView: WebView?,
-        continuation: CancellableContinuation<SongInfo?>,
+    private fun startExtractionAttempts(
+        webView: WebView,
         hasExtracted: AtomicBoolean,
-        attempt: Int
+        continuation: CancellableContinuation<SongInfo?>
     ) {
-        if (attempt >= MAX_RETRIES || hasExtracted.get()) {
-            if (!hasExtracted.get()) {
-                Log.e(TAG, "Failed to extract after $MAX_RETRIES attempts")
-                hasExtracted.set(true)
-                continuation.resume(null)
-            }
-            return
-        }
-        
         // First check if the page is ready
-        webView?.evaluateJavascript(PAGE_CHECK_SCRIPT) { result ->
+        webView.evaluateJavascript(PAGE_CHECK_SCRIPT) { result ->
             when (result.trim('"')) {
                 "READY" -> {
                     Log.d(TAG, "Page is ready, extracting metadata")
-                    extractMetadata(webView, continuation, hasExtracted)
+                    extractMetadata(webView, hasExtracted, continuation)
                 }
                 "NOT_READY" -> {
-                    Log.d(TAG, "Page not ready (attempt ${attempt + 1}/$MAX_RETRIES), retrying in ${RETRY_DELAY_MS}ms")
+                    Log.d(TAG, "Page not ready, retrying in ${RETRY_DELAY_MS}ms")
                     CoroutineScope(Dispatchers.Main).launch {
                         delay(RETRY_DELAY_MS)
-                        attemptExtraction(webView, continuation, hasExtracted, attempt + 1)
+                        startExtractionAttempts(webView, hasExtracted, continuation)
                     }
                 }
                 else -> {
@@ -214,31 +161,19 @@ class YouTubeMusicExtractor(private val context: Context) {
     }
 
     private fun extractMetadata(
-        webView: WebView?,
-        continuation: CancellableContinuation<SongInfo?>,
-        hasExtracted: AtomicBoolean
+        webView: WebView,
+        hasExtracted: AtomicBoolean,
+        continuation: CancellableContinuation<SongInfo?>
     ) {
         if (hasExtracted.get()) return
         
-        webView?.evaluateJavascript(EXTRACTION_SCRIPT) { result ->
+        webView.evaluateJavascript(EXTRACTION_SCRIPT) { result ->
             if (hasExtracted.get()) return@evaluateJavascript
             
             try {
                 Log.d(TAG, "JavaScript extraction result: $result")
                 if (result != "null") {
-                    val json = JSONObject(result.trim('"').replace("\\\"", "\""))
-                    val title = json.optString("title", "").trim()
-                    val artist = json.optString("artist", "").trim()
-                    
-                    if (title.isNotEmpty() && artist.isNotEmpty()) {
-                        Log.d(TAG, "Successfully extracted - Title: \"$title\", Artist: \"$artist\"")
-                        hasExtracted.set(true)
-                        continuation.resume(SongInfo(title, artist))
-                    } else {
-                        Log.e(TAG, "Missing title or artist in extraction result")
-                        hasExtracted.set(true)
-                        continuation.resume(null)
-                    }
+                    handleExtractionSuccess(webView, hasExtracted, continuation, result)
                 } else {
                     Log.e(TAG, "JavaScript extraction returned null")
                     hasExtracted.set(true)
@@ -248,6 +183,33 @@ class YouTubeMusicExtractor(private val context: Context) {
                 Log.e(TAG, "Error parsing extraction result: ${e.message}")
                 hasExtracted.set(true)
                 continuation.resume(null)
+            }
+        }
+    }
+
+    private fun handleExtractionSuccess(
+        webView: WebView,
+        hasExtracted: AtomicBoolean,
+        continuation: CancellableContinuation<SongInfo?>,
+        result: String
+    ) {
+        if (!hasExtracted.get()) {
+            try {
+                val json = JSONObject(result)
+                val title = json.getString("title")
+                val artist = json.getString("artist")
+                
+                Log.d(TAG, "Successfully extracted - Title: \"$title\", Artist: \"$artist\"")
+                
+                hasExtracted.set(true)
+                extractionCompleted = true
+                continuation.resume(SongInfo(title = title, artist = artist))
+            } catch (e: Exception) {
+                Log.e(TAG, "Error parsing extraction result: ${e.message}")
+                if (!hasExtracted.get()) {
+                    hasExtracted.set(true)
+                    continuation.resume(null)
+                }
             }
         }
     }

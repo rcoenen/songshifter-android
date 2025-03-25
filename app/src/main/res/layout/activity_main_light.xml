@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="#F5F5F5"
+    android:background="#FFFFFF"
     tools:context=".MainActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -20,28 +20,21 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:padding="12dp"
-        android:background="@android:color/white"
-        android:elevation="2dp"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginHorizontal="1dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        android:padding="8dp"
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
-            android:id="@+id/app_logo"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@mipmap/ic_launcher"
-            android:contentDescription="BINUS app icon" />
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/venus_logo"
+            android:contentDescription="App logo" />
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="BINUS Music Bridge"
-            android:textSize="20sp"
+            android:text="Binus Music Bridge"
+            android:textSize="22sp"
             android:textColor="#4B00E0"
             android:textStyle="bold"
             android:layout_marginStart="16dp" />
@@ -53,7 +46,7 @@
             android:background="@drawable/build_version_background"
             android:textColor="#000000"
             android:textSize="12sp"
-            android:text="BUILD: 185"
+            android:text="BUILD: 180"
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
             android:paddingTop="4dp"
@@ -65,7 +58,7 @@
         android:id="@+id/descriptionText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="16dp"
         android:text="Opens Spotify links in YouTube Music and YouTube Music links in Spotify, based on your preference."
         android:textSize="16sp"
         android:gravity="center"
@@ -83,7 +76,6 @@
         app:cardCornerRadius="8dp"
         app:cardElevation="2dp"
         app:contentPadding="0dp"
-        android:backgroundTint="@android:color/white"
         app:layout_constraintTop_toBottomOf="@id/descriptionText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -98,20 +90,20 @@
                 android:layout_height="wrap_content"
                 android:background="#4B00E0"
                 android:padding="12dp"
-                android:text="Setup Verification"
+                android:text="Link Status"
                 android:textAlignment="center"
                 android:textAppearance="?attr/textAppearanceHeadline6"
                 android:textColor="#FFFFFF"
                 android:textStyle="bold" />
 
-            <!-- Link Interception Status (YouTube Music links) -->
+            <!-- Link Interception Status -->
             <LinearLayout
                 android:id="@+id/linkInterceptionLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@android:color/white"
-                android:clickable="false"
-                android:focusable="false"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:padding="16dp">
@@ -140,15 +132,15 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
                 android:background="#E0E0E0" />
-                
+
             <!-- Spotify Link Interception Status -->
             <LinearLayout
                 android:id="@+id/spotifyLinkInterceptionLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@android:color/white"
-                android:clickable="false"
-                android:focusable="false"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:padding="16dp">
@@ -183,9 +175,9 @@
                 android:id="@+id/ytMusicStatusLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@android:color/white"
-                android:clickable="false"
-                android:focusable="false"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:padding="16dp">
@@ -207,40 +199,10 @@
                     android:textColor="#333333"
                     android:textAppearance="?attr/textAppearanceBody1" />
             </LinearLayout>
-            
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:background="#E0E0E0" />
-                
-            <!-- Settings Button -->
-            <Button
-                android:id="@+id/openSettingsButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="16dp"
-                android:backgroundTint="#4B00E0"
-                android:text="Open App Link Settings"
-                android:textColor="#FFFFFF" />
-                
-            <!-- YouTube Music Settings Button -->
-            <Button
-                android:id="@+id/openYTMusicSettingsButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="16dp"
-                android:backgroundTint="#E53935"
-                android:text="Open YouTube Music Settings"
-                android:textColor="#FFFFFF"
-                android:visibility="gone" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.card.MaterialCardView
         android:id="@+id/statusCard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -248,7 +210,6 @@
         app:cardCornerRadius="8dp"
         app:cardElevation="2dp"
         app:contentPadding="0dp"
-        android:backgroundTint="@android:color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/statusDashboard">
@@ -313,7 +274,7 @@
 
             </LinearLayout>
         </LinearLayout>
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/testButton"

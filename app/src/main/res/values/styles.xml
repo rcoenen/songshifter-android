@@ -84,4 +84,14 @@
         <item name="android:windowIsFloating">false</item>
         <item name="android:backgroundDimEnabled">false</item>
     </style>
+
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">#4B00E0</item>
+        <item name="colorPrimaryDark">#3700B3</item>
+        <item name="colorAccent">#4B00E0</item>
+        <item name="android:windowBackground">#F5F5F5</item>
+        <item name="android:statusBarColor">#4B00E0</item>
+        <item name="android:navigationBarColor">#FFFFFF</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
 </resources> 

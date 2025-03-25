@@ -9,7 +9,7 @@ import android.util.Log
  */
 class WebViewExtractor(private val context: Context) {
     private val TAG = "WebViewExtractor"
-    private val youtubeMusicExtractor = YouTubeMusicExtractor(context)
+    private val youtubeMusicExtractor by lazy { YouTubeMusicExtractor(context) }
 
     suspend fun extractFromYouTubeMusic(url: String): SongInfo? {
         Log.d(TAG, "Delegating to YouTube Music extractor")

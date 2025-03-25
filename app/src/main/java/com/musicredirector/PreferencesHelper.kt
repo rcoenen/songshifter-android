@@ -22,6 +22,11 @@ class PreferencesHelper(context: Context) {
         private const val KEY_TARGET_PLATFORM = "target_platform"
         const val TARGET_YOUTUBE_MUSIC = "YouTube Music"
         const val TARGET_SPOTIFY = "Spotify"
+        
+        private const val KEY_SPOTIFY_REDIRECTION = "spotify_redirection"
+        private const val KEY_YOUTUBE_MUSIC_REDIRECTION = "youtube_music_redirection"
+        private const val KEY_SHAZAM_REDIRECTION = "shazam_redirection"
+        private const val KEY_YOUTUBE_MUSIC_WARNING_DISMISSED = "youtube_music_warning_dismissed"
     }
     
     fun isFirstRun(): Boolean {
@@ -80,5 +85,13 @@ class PreferencesHelper(context: Context) {
     
     fun setTargetPlatform(platform: String) {
         prefs.edit().putString(KEY_TARGET_PLATFORM, platform).apply()
+    }
+    
+    fun getYouTubeMusicWarningDismissed(): Boolean {
+        return prefs.getBoolean(KEY_YOUTUBE_MUSIC_WARNING_DISMISSED, false)
+    }
+    
+    fun setYouTubeMusicWarningDismissed(dismissed: Boolean) {
+        prefs.edit().putBoolean(KEY_YOUTUBE_MUSIC_WARNING_DISMISSED, dismissed).apply()
     }
 } 
