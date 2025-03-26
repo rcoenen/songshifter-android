@@ -36,6 +36,7 @@ Note: We distribute debug builds to keep the app free and open source, avoiding 
 ## TODO
 
 Future improvements we're considering:
+
 - Fix YouTube Music cold start issues (first search failing)
 - Add Shazam link support
 - Add toast message when YouTube Music needs a "warm-up" launch
@@ -45,6 +46,7 @@ Future improvements we're considering:
 ## Contributing
 
 Found a bug? Have a suggestion? Feel free to:
+
 - Open an issue
 - Submit a pull request
 - Test and provide feedback
