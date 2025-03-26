@@ -199,8 +199,19 @@ class PlatformManager(
         } 
         // For Spotify → YouTube Music (preferredPlatform == YOUTUBE_MUSIC)
         else {
+            // Clear both layouts first to reset their state
+            if (ytMusicLayout.parent is ViewGroup) {
+                val parent = ytMusicLayout.parent as ViewGroup
+                parent.removeView(ytMusicLayout)
+                parent.removeView(spotifyLayout)
+            }
+            
+            // Accessing the parent ViewGroup that contains both layouts
+            val setupStatusLayout = findViewById<ViewGroup>(R.id.configStatusLayout)
+            
             // STEP 1: Use platform-specific check for YouTube Music
             ytMusicLayout.tag = "step1"
+            setupStatusLayout.addView(ytMusicLayout, 0) // Add at position 0 (first)
             ytMusicLayout.visibility = View.VISIBLE
             
             val ytMusicStatus = ytMusicStatusFactory.create()
@@ -208,7 +219,7 @@ class PlatformManager(
             if (ytMusicStatus.isInCorrectState()) {
                 // Success state - YouTube Music is in the right state for this device type
                 ytMusicStatusIcon.setBackgroundResource(R.drawable.status_green)
-                ytMusicStatusText.text = ytMusicStatus.getSuccessMessage().replace("2", "1")
+                ytMusicStatusText.text = "1. ✓ YouTube Music app is disabled"
                 ytMusicStatusText.setTextColor(context.getColor(android.R.color.tab_indicator_text))
                 ytMusicStatusText.paintFlags = ytMusicStatusText.paintFlags and android.graphics.Paint.UNDERLINE_TEXT_FLAG.inv()
                 ytMusicLayout.isClickable = false
@@ -222,7 +233,7 @@ class PlatformManager(
             } else {
                 // Action needed state - YouTube Music needs attention
                 ytMusicStatusIcon.setBackgroundResource(R.drawable.status_red)
-                ytMusicStatusText.text = ytMusicStatus.getActionNeededMessage().replace("2", "1")
+                ytMusicStatusText.text = "1. ✗ YouTube Music app needs to be disabled (tap to fix)"
                 ytMusicStatusText.setTextColor(context.getColor(android.R.color.holo_blue_dark))
                 ytMusicStatusText.paintFlags = ytMusicStatusText.paintFlags or android.graphics.Paint.UNDERLINE_TEXT_FLAG
                 
@@ -239,6 +250,7 @@ class PlatformManager(
             
             // STEP 2: Check if Spotify is uninstalled (needs to be uninstalled for this mode)
             spotifyLayout.tag = "step2"
+            setupStatusLayout.addView(spotifyLayout, 1) // Add at position 1 (second)
             spotifyLayout.visibility = View.VISIBLE
             
             if (spotifyHandler.isSpotifyInstalled()) {
