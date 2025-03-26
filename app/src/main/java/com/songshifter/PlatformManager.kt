@@ -211,7 +211,7 @@ class PlatformManager(
             
             // STEP 1: Use platform-specific check for YouTube Music
             ytMusicLayout.tag = "step1"
-            setupStatusLayout.addView(ytMusicLayout, 0) // Add at position 0 (first)
+            setupStatusLayout.addView(ytMusicLayout, 1) // Add at position 1 (after instructions text)
             ytMusicLayout.visibility = View.VISIBLE
             
             val ytMusicStatus = ytMusicStatusFactory.create()
@@ -219,7 +219,7 @@ class PlatformManager(
             if (ytMusicStatus.isInCorrectState()) {
                 // Success state - YouTube Music is in the right state for this device type
                 ytMusicStatusIcon.setBackgroundResource(R.drawable.status_green)
-                ytMusicStatusText.text = "1. ✓ YouTube Music app is disabled"
+                ytMusicStatusText.text = ytMusicStatus.getSuccessMessage()
                 ytMusicStatusText.setTextColor(context.getColor(android.R.color.tab_indicator_text))
                 ytMusicStatusText.paintFlags = ytMusicStatusText.paintFlags and android.graphics.Paint.UNDERLINE_TEXT_FLAG.inv()
                 ytMusicLayout.isClickable = false
@@ -233,7 +233,7 @@ class PlatformManager(
             } else {
                 // Action needed state - YouTube Music needs attention
                 ytMusicStatusIcon.setBackgroundResource(R.drawable.status_red)
-                ytMusicStatusText.text = "1. ✗ YouTube Music app needs to be disabled (tap to fix)"
+                ytMusicStatusText.text = ytMusicStatus.getActionNeededMessage()
                 ytMusicStatusText.setTextColor(context.getColor(android.R.color.holo_blue_dark))
                 ytMusicStatusText.paintFlags = ytMusicStatusText.paintFlags or android.graphics.Paint.UNDERLINE_TEXT_FLAG
                 
@@ -250,7 +250,7 @@ class PlatformManager(
             
             // STEP 2: Check if Spotify is uninstalled (needs to be uninstalled for this mode)
             spotifyLayout.tag = "step2"
-            setupStatusLayout.addView(spotifyLayout, 1) // Add at position 1 (second)
+            setupStatusLayout.addView(spotifyLayout, 2) // Add at position 2 (after step 1)
             spotifyLayout.visibility = View.VISIBLE
             
             if (spotifyHandler.isSpotifyInstalled()) {
@@ -337,15 +337,6 @@ class PlatformManager(
         // Hide all link status layouts by default
         ytLinkLayout.visibility = View.GONE
         spotifyLinkLayout.visibility = View.GONE
-        
-        // Set overall setup description based on preference
-        val setupDescription = findViewById<TextView>(R.id.setupStatusDescription)
-        setupDescription.visibility = View.VISIBLE
-        setupDescription.text = if (preferredPlatform == PreferencesHelper.PLATFORM_SPOTIFY) {
-            "To play YouTube Music links in Spotify, complete these steps:"
-        } else {
-            "To play Spotify links in YouTube Music, complete these steps:"
-        }
         
         // Update UI based on the selected platform
         if (preferredPlatform == PreferencesHelper.PLATFORM_SPOTIFY) {

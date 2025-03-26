@@ -19,7 +19,7 @@ class RegularYouTubeMusicStatus(context: Context) : BaseYouTubeMusicStatus(conte
     }
     
     override fun getStepNumber(): String {
-        return "2"
+        return "1"
     }
     
     override fun getSuccessMessage(): String {

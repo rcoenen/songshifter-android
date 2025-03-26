@@ -3,6 +3,7 @@ package com.songshifter
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
+import android.graphics.Paint
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -62,9 +63,11 @@ class MainActivity : AppCompatActivity() {
         // Handle any incoming intent
         handleIncomingIntent(intent)
         
-        // Set up changelog button
-        findViewById<TextView>(R.id.changelogButton).setOnClickListener {
-            showChangelog()
+        // Set up changelog button with underline
+        val changelogButton = findViewById<TextView>(R.id.changelogButton)
+        changelogButton.paintFlags = changelogButton.paintFlags or Paint.UNDERLINE_TEXT_FLAG
+        changelogButton.setOnClickListener {
+            startActivity(Intent(this, ChangelogActivity::class.java))
         }
     }
     
@@ -143,10 +146,23 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun updateDirectionDescription(position: Int) {
-        directionDescription.text = if (position == DIRECTION_YOUTUBE_TO_SPOTIFY) {
+        val description = if (position == DIRECTION_YOUTUBE_TO_SPOTIFY) {
             "When you select a YouTube Music link, it will open in Spotify"
         } else {
             "When you select a Spotify link, it will open in YouTube Music"
+        }
+        directionDescription.text = description
+        
+        // Also update the setup instructions text
+        updateSetupInstructionsText(position)
+    }
+    
+    private fun updateSetupInstructionsText(position: Int) {
+        val instructionsText = findViewById<TextView>(R.id.setupInstructionsText)
+        if (position == DIRECTION_YOUTUBE_TO_SPOTIFY) {
+            instructionsText.text = "To play YouTube Music links in Spotify, complete these steps:"
+        } else {
+            instructionsText.text = "To play Spotify links in YouTube Music, complete these steps:"
         }
     }
     

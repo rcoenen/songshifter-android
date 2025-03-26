@@ -4,6 +4,8 @@ Don't you hate it when you, as a YouTube Music user, get Spotify links sent via 
 
 SongShifter seamlessly bridges the gap between music platforms by automatically redirecting links between services based on your preferences. No more frustration when friends share music from platforms you don't use - SongShifter handles the conversion for you.
 
+**Project Homepage:** [GitHub: songshifter-android](https://github.com/rcoenen/songshifter-android)
+
 ## Status (v1.5.3-b357)
 
 ### Working Features
@@ -157,6 +159,7 @@ Please report any issues or unexpected behavior when:
 
 ##  MIT License
 
+```
 Copyright (c) 2024 SongShifter
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and 
@@ -173,3 +176,4 @@ NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPO
 IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```

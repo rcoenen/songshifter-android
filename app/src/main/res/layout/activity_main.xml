@@ -46,42 +46,27 @@
             android:textStyle="bold"
             android:layout_marginStart="16dp" />
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/buildVersionText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:textColor="#4B00E0"
+            android:textSize="14sp"
+            android:layout_marginEnd="4dp" />
 
-            <TextView
-                android:id="@+id/buildVersionText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/build_version_background"
-                android:textColor="#000000"
-                android:textSize="12sp"
-                android:text="BUILD: 250"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:paddingTop="4dp"
-                android:paddingBottom="4dp"
-                android:layout_marginEnd="8dp" />
-
-            <TextView
-                android:id="@+id/changelogButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/build_version_background"
-                android:text="CHANGELOG"
-                android:textColor="#000000"
-                android:textSize="12sp"
-                android:drawableStart="@android:drawable/ic_menu_info_details"
-                android:drawablePadding="4dp"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:paddingTop="4dp"
-                android:paddingBottom="4dp"
-                android:clickable="true"
-                android:focusable="true" />
-        </LinearLayout>
+        <TextView
+            android:id="@+id/changelogButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CHANGELOG"
+            android:textColor="#4B00E0"
+            android:textSize="14sp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:clickable="true"
+            android:focusable="true" />
     </LinearLayout>
 
     <!-- App Description -->
@@ -228,17 +213,18 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <!-- Status items will be shown here -->
+                <!-- Instructions Text -->
                 <TextView
-                    android:id="@+id/setupStatusDescription"
+                    android:id="@+id/setupInstructionsText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    android:gravity="center"
+                    android:text="To play Spotify links in YouTube Music, complete these steps:"
+                    android:textSize="14sp"
                     android:textColor="#333333"
-                    android:textSize="16sp" />
-                    
-                <!-- YouTube Music Status (will be step 1 in one mode) -->
+                    android:layout_marginBottom="16dp"
+                    android:gravity="center" />
+
+                <!-- Status Items -->
                 <LinearLayout
                     android:id="@+id/ytMusicStatusLayout"
                     android:layout_width="match_parent"
