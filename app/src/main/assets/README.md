@@ -32,6 +32,9 @@ Note: We distribute debug builds to keep the app free and open source, avoiding 
 
 ## Known Issues
 
+⚠️ **IMPORTANT**: YouTube Music to Spotify redirection is currently broken on non-Pixel devices. The app has only been tested and verified to work on Google Pixel phones. If you have a non-Pixel device, YouTube Music links may open in your browser instead of Spotify.
+
+Other known issues:
 - YouTube Music needs to be running in the background for redirections to work
 - First YouTube Music search after app launch might fail (just try again)
 
