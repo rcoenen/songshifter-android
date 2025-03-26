@@ -11,6 +11,8 @@ This is an open source project! Check out our [GitHub repository](https://github
 
 That's it! No more copying and pasting song names or manually searching.
 
+![How SongShifter works](how-it-works.gif)
+
 ## Download & Setup
 
 This is a free, open-source app distributed as a debug build on GitHub (no app store required).
