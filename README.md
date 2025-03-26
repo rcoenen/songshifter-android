@@ -1,8 +1,10 @@
 # SongShifter
 
-Android app that redirects music links between platforms based on your preference.
+Don't you hate it when you, as a YouTube Music user, get Spotify links sent via messaging apps from your friends and cannot click to play them? Or as a Spotify user, you might get YouTube Music links that you cannot play? Well, now we have a solution!
 
-## Status (v1.5.0-b292)
+SongShifter seamlessly bridges the gap between music platforms by automatically redirecting links between services based on your preferences. No more frustration when friends share music from platforms you don't use - SongShifter handles the conversion for you.
+
+## Status (v1.5.0-b349)
 
 ### Working Features
 - ✅ Spotify to YouTube Music redirection (fully tested and stable)
@@ -42,7 +44,7 @@ Android app that redirects music links between platforms based on your preferenc
 
 ## Development Status
 
-Current build: 292
+Current build: 349
 Version: 1.5.0
 
 ### Recent Updates
@@ -62,6 +64,12 @@ Version: 1.5.0
 - User feedback collection and bug fixes
 
 ## Changelog
+
+### v1.5.0-b349 (Build 349) - March 26, 2024
+- Renamed app from MusicRedirector to SongShifter
+- Updated all package references and branding
+- Added metadata for improved link handling
+- Fixed various UI references to reflect new app name
 
 ### v1.5.0-b292 (Build 292) - March 25, 2024
 - Fixed step ordering in setup UI to ensure logical 1-2-3 progression
