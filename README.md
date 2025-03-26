@@ -4,7 +4,7 @@ Don't you hate it when you, as a YouTube Music user, get Spotify links sent via 
 
 SongShifter seamlessly bridges the gap between music platforms by automatically redirecting links between services based on your preferences. No more frustration when friends share music from platforms you don't use - SongShifter handles the conversion for you.
 
-## Status (v1.5.0-b349)
+## Status (v1.5.3-b357)
 
 ### Working Features
 - ✅ Spotify to YouTube Music redirection (fully tested and stable)
@@ -15,6 +15,11 @@ SongShifter seamlessly bridges the gap between music platforms by automatically 
 - ✅ Test functionality for verifying redirections
 - ✅ Dedicated settings buttons for easier configuration
 - ✅ Accurate link handling status detection on Android 11+
+- ✅ Platform-aware YouTube Music status detection (Pixel vs. non-Pixel devices)
+
+### Platform-Specific Features
+- ✅ Pixel phones: Detects YouTube Music as system app and guides users to disable it
+- ✅ Non-Pixel phones: Detects YouTube Music as regular app and guides users to install it
 
 ### Limited Testing
 - ⚠️ Shazam link processing and redirection
@@ -44,12 +49,14 @@ SongShifter seamlessly bridges the gap between music platforms by automatically 
 
 ## Development Status
 
-Current build: 349
-Version: 1.5.0
+Current build: 357
+Version: 1.5.3
 
 ### Recent Updates
+- Added platform-aware YouTube Music detection to properly handle both Pixel and non-Pixel devices
+- Fixed step ordering in setup UI to ensure logical 1-2-3 sequence
+- Fixed visual ordering of platform status items to match step numbers
 - Improved circular redirection detection and prevention when using Spotify to YouTube Music mode
-- Fixed step ordering in the setup UI to ensure logical progression (1-2-3)
 - Enhanced YouTube Music detection to properly handle disabled apps
 - Added fallback methods for YouTube Music launching when URI schemes aren't supported
 - Automated configuration of link handling settings based on the selected mode
@@ -64,6 +71,23 @@ Version: 1.5.0
 - User feedback collection and bug fixes
 
 ## Changelog
+
+### v1.5.3-b357 (Build 357) - March 26, 2024
+- Added platform-aware YouTube Music status detection that properly handles:
+  - Pixel phones (where YouTube Music is a system app that needs to be disabled)
+  - Non-Pixel phones (where YouTube Music needs to be installed)
+- Fixed visual ordering of setup steps to ensure correct 1-2-3 sequence
+- Fixed view ordering in UI to match step numbers
+- Improved user guidance with platform-specific instructions
+
+### v1.5.2-b356 (Build 356) - March 26, 2024
+- Fixed step ordering in Spotify→YouTube Music mode to show steps in correct 1-2-3 sequence
+- Updated step numbers in status text for consistency
+
+### v1.5.1-b353 (Build 353) - March 26, 2024
+- Added platform detection architecture to handle different device types
+- Implemented SystemYouTubeMusicStatus for Pixel devices
+- Implemented RegularYouTubeMusicStatus for other Android phones
 
 ### v1.5.0-b349 (Build 349) - March 26, 2024
 - Renamed app from MusicRedirector to SongShifter
