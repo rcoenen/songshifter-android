@@ -2,19 +2,26 @@
 
 A simple Android app that lets you open YouTube Music links in Spotify, and Spotify links in YouTube Music.
 
+This is an open source project! Check out our [GitHub repository](https://github.com/rcoenen/songshifter-android) to see the source code, report issues, or contribute.
+
 ## What it does
 
 - 🎵 Click a Spotify link → Opens in YouTube Music
-- 🎶 Click a YouTube Music link → Opens in Spotify
+- 🎵 Click a YouTube Music link → Opens in Spotify
 
 That's it! No more copying and pasting song names or manually searching.
 
 ## Download & Setup
 
-1. [Download the latest release](https://github.com/rcoenen/songshifter-android/releases/latest)
-2. Install the app
-3. Choose which platform you use (YouTube Music or Spotify)
-4. Start clicking those previously "unplayable" links!
+This is a free, open-source app distributed as a debug build on GitHub (no app store required).
+
+1. [Download the debug APK](https://github.com/rcoenen/songshifter-android/releases/latest) from our GitHub releases
+2. Allow installation from unknown sources in your Android settings
+3. Install the APK
+4. Choose which platform you use (YouTube Music or Spotify)
+5. Start clicking those previously "unplayable" links!
+
+Note: We distribute debug builds to keep the app free and open source, avoiding app store restrictions and paid developer accounts.
 
 ## Requirements
 
