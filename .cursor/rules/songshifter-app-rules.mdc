@@ -3,9 +3,6 @@ description: Rules for the Music Redirector Android app
 globs: ["**/*.kt", "**/*.xml", "**/*.gradle", "**/AndroidManifest.xml", "**/build.gradle"]
 alwaysApply: true
 ---
-ACK COMMANDER! (Running on GPT-4)
-
-Here is your fully updated Music Redirector App Rules file with your requested addition included under ## Meta Rules:
 
 # Music Redirector App Rules
 
@@ -13,7 +10,20 @@ Here is your fully updated Music Redirector App Rules file with your requested a
 - All responses must start with "ACK. OK COMMANDER!" followed by "(Running on [AI Model Name])"
 - All updates to this rules file must be done via terminal commands (echo, cat, etc.) not through the edit_file tool
 - When reading logs, always verify that the build version matches the expected version from the last deployment
-- When a physical Android device is connected via USB, prefer it over any wireless ADB connection for install and debugging.
+- When a physical Android device is connected via USB, prefer it over any wireless ADB connection for install and debugging
+
+## Release Rules
+- Only include the debug APK in GitHub releases - GitHub will automatically add source code (zip/tar.gz) to every release, which is fine
+- When creating releases with gh CLI:
+  1. Use --title for short title and --notes for description
+  2. Avoid multiline release notes with \n characters - write everything in a single line with periods
+  3. Example command: gh release create v1.0.0 app-debug.apk --title "Title" --notes "Single line description." --latest
+- Release version format: v1.0.0 (no build numbers in release tags)
+- To update/fix a release:
+  1. Delete old release: gh release delete <tag> --yes
+  2. Delete old tag if needed: git tag -d <tag> && git push origin :<tag>
+  3. Create new release with corrected information
+- Keep release notes clear and concise, focusing on user-facing changes
 
 ## General Rules
 - After every successful build and install, announce the current build version number in the format "BUILD VERSION: X" where X is the versionCode from build.gradle
@@ -43,5 +53,3 @@ Here is your fully updated Music Redirector App Rules file with your requested a
 - Keep dependencies up to date and use stable versions
 - Include all necessary permissions for URL handling and app redirections
 - Increment versionCode by 1 with each deployment
-
-If you’d like the exact terminal echo command to append or replace this file on disk, I can prep that next. Just give me the target file path.
