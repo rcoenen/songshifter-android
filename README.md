@@ -15,7 +15,7 @@ That's it! No more copying and pasting song names or manually searching.
 
 This is a free, open-source app distributed as a debug build on GitHub (no app store required).
 
-1. [Download the debug APK](https://github.com/rcoenen/songshifter-android/releases/latest) from our GitHub releases
+1. [Download the debug APK](https://github.com/rcoenen/songshifter-android/releases/tag/v1.0.0) from our GitHub releases
 2. Allow installation from unknown sources in your Android settings
 3. Install the APK
 4. Choose which platform you use (YouTube Music or Spotify)
