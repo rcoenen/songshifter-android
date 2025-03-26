@@ -6,7 +6,13 @@ SongShifter seamlessly bridges the gap between music platforms by automatically 
 
 **Project Homepage:** [GitHub: songshifter-android](https://github.com/rcoenen/songshifter-android)
 
-## Status (v1.5.3-b357)
+## Download
+
+- [Download Release APK](https://github.com/rcoenen/songshifter-android/releases/download/v1.5.4-b384/songshifter-v1.5.4-b385-release.apk) - Recommended for most users
+- [Download Debug APK](https://github.com/rcoenen/songshifter-android/releases/download/v1.5.4-b384/songshifter-v1.5.4-b384.apk) - For testing purposes
+- [All Releases](https://github.com/rcoenen/songshifter-android/releases) - View all versions
+
+## Status (v1.5.4-b385)
 
 ### Working Features
 - ✅ Spotify to YouTube Music redirection (fully tested and stable)
@@ -51,8 +57,8 @@ SongShifter seamlessly bridges the gap between music platforms by automatically 
 
 ## Development Status
 
-Current build: 357
-Version: 1.5.3
+Current build: 385
+Version: 1.5.4
 
 ### Recent Updates
 - Added platform-aware YouTube Music detection to properly handle both Pixel and non-Pixel devices
@@ -74,7 +80,7 @@ Version: 1.5.3
 
 ## Changelog
 
-### v1.5.3-b357 (Build 357) - March 26, 2024
+### v1.5.4-b385 (Build 385) - March 26, 2024
 - Added platform-aware YouTube Music status detection that properly handles:
   - Pixel phones (where YouTube Music is a system app that needs to be disabled)
   - Non-Pixel phones (where YouTube Music needs to be installed)
@@ -82,7 +88,7 @@ Version: 1.5.3
 - Fixed view ordering in UI to match step numbers
 - Improved user guidance with platform-specific instructions
 
-### v1.5.2-b356 (Build 356) - March 26, 2024
+### v1.5.3-b357 (Build 357) - March 26, 2024
 - Fixed step ordering in Spotify→YouTube Music mode to show steps in correct 1-2-3 sequence
 - Updated step numbers in status text for consistency
 
