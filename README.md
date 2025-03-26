@@ -1,4 +1,4 @@
-# SongShifter
+# SongShifter v1.0.0
 
 A simple Android app that lets you open YouTube Music links in Spotify, and Spotify links in YouTube Music.
 
