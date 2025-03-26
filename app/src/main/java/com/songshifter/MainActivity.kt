@@ -211,12 +211,4 @@ class MainActivity : AppCompatActivity() {
         // Directly call the disable method instead
         linkVerificationManager.disableYouTubeMusicHandling()
     }
-    
-    /**
-     * Opens the changelog activity
-     */
-    private fun showChangelog() {
-        val intent = Intent(this, ChangelogActivity::class.java)
-        startActivity(intent)
-    }
 } 

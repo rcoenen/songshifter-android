@@ -29,7 +29,7 @@ class ReadmeActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_changelog)
+        setContentView(R.layout.activity_readme)
 
         // Initialize CommonMark parser and renderer with extensions
         val extensions = listOf(
