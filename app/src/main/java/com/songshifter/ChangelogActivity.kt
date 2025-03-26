@@ -48,11 +48,17 @@ class ChangelogActivity : AppCompatActivity() {
         webView = findViewById(R.id.readmeWebView)
         progressBar = findViewById(R.id.progressBar)
 
-        // Enable JavaScript for better rendering
-        webView.settings.javaScriptEnabled = true
+        // Enable JavaScript and content features for better rendering
+        webView.settings.apply {
+            javaScriptEnabled = true
+            allowFileAccess = true
+            loadsImagesAutomatically = true
+            mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+        }
         
         // Set up WebViewClient to handle external links
         webView.webViewClient = object : WebViewClient() {
+            @Deprecated("Deprecated in Java")
             override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                 url?.let {
                     // Open links in external browser
@@ -87,7 +93,7 @@ class ChangelogActivity : AppCompatActivity() {
                     val htmlContent = markdownToHtml(readmeContent)
                     Log.d(TAG, "Converted HTML content: $htmlContent")
                     webView.loadDataWithBaseURL(
-                        "https://github.com/rcoenen/songshifter-android/blob/master/",
+                        "https://raw.githubusercontent.com/rcoenen/songshifter-android/master/",
                         htmlContent,
                         "text/html",
                         "UTF-8",
