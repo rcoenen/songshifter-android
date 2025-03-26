@@ -58,7 +58,7 @@
             android:id="@+id/changelogButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="CHANGELOG"
+            android:text="README"
             android:textColor="#4B00E0"
             android:textSize="14sp"
             android:paddingStart="8dp"

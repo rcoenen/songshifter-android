@@ -20,8 +20,8 @@ import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension
 /**
  * Activity to display the full README.md contents in a WebView
  */
-class ChangelogActivity : AppCompatActivity() {
-    private val TAG = "ChangelogActivity"
+class ReadmeActivity : AppCompatActivity() {
+    private val TAG = "ReadmeActivity"
     private lateinit var webView: WebView
     private lateinit var progressBar: ProgressBar
     private lateinit var parser: Parser

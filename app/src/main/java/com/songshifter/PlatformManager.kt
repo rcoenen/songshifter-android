@@ -274,16 +274,18 @@ class PlatformManager(
                 spotifyLayout.setOnClickListener { 
                     Log.d(TAG, "Spotify row clicked - opening uninstall")
                     // Add vibration feedback
-                    try {
-                        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as android.os.Vibrator
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            vibrator.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
-                        } else {
-                            @Suppress("DEPRECATION")
-                            vibrator.vibrate(50)
-                        }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Could not vibrate: ${e.message}")
+                    val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as android.os.VibratorManager
+                        vibratorManager.defaultVibrator
+                    } else {
+                        @Suppress("DEPRECATION")
+                        context.getSystemService(Context.VIBRATOR_SERVICE) as android.os.Vibrator
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        vibrator.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
+                    } else {
+                        @Suppress("DEPRECATION")
+                        vibrator.vibrate(50)
                     }
                     
                     // Add a toast for confirmation

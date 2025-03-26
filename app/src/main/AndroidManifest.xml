@@ -126,6 +126,12 @@
             android:parentActivityName=".SettingsActivity" />
 
         <activity
+            android:name=".ReadmeActivity"
+            android:label="README"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
             android:name=".ChangelogActivity"
             android:label="What's New"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"

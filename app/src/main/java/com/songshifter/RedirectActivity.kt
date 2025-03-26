@@ -207,12 +207,12 @@ class RedirectActivity : AppCompatActivity() {
                     
                     try {
                         // Build a simple search URL
-                        val query = Uri.encode("${songInfo.title} ${songInfo.artist}".trim())
+                        val searchQuery = Uri.encode("${songInfo.title} ${songInfo.artist}".trim())
                         
                         if (preferredPlatform == PreferencesHelper.PLATFORM_SPOTIFY) {
                             // Simple direct Spotify approach
                             try {
-                                val spotifyUri = "spotify:search:$query"
+                                val spotifyUri = "spotify:search:$searchQuery"
                                 
                                 // Check if Spotify is really installed
                                 val isSpotifyReallyInstalled = isAppInstalled(SPOTIFY_PACKAGE)
@@ -244,7 +244,7 @@ class RedirectActivity : AppCompatActivity() {
                         } else if (preferredPlatform == PreferencesHelper.PLATFORM_YOUTUBE_MUSIC) {
                             // Simple direct YouTube Music approach
                             try {
-                                val youtubeUri = "youtube-music://search?q=$query"
+                                val youtubeUri = "youtube-music://search?q=$searchQuery"
                                 
                                 // Check if YouTube Music is really installed AND enabled
                                 val isYTMusicReallyInstalled = isAppInstalled(YOUTUBE_MUSIC_PACKAGE)

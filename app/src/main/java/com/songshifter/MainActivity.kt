@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity() {
         val changelogButton = findViewById<TextView>(R.id.changelogButton)
         changelogButton.paintFlags = changelogButton.paintFlags or Paint.UNDERLINE_TEXT_FLAG
         changelogButton.setOnClickListener {
-            startActivity(Intent(this, ChangelogActivity::class.java))
+            startActivity(Intent(this, ReadmeActivity::class.java))
         }
     }
     
