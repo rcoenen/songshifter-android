@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.pm.PackageInfoCompat
 import androidx.core.graphics.drawable.DrawableCompat
+import java.lang.Exception
 
 /**
  * Main activity for the SongShifter app
@@ -60,6 +61,11 @@ class MainActivity : AppCompatActivity() {
         
         // Handle any incoming intent
         handleIncomingIntent(intent)
+        
+        // Set up changelog button
+        findViewById<TextView>(R.id.changelogButton).setOnClickListener {
+            showChangelog()
+        }
     }
     
     private fun initializeComponents() {
@@ -188,5 +194,13 @@ class MainActivity : AppCompatActivity() {
         // This method is redundant since we're handling link configuration automatically
         // Directly call the disable method instead
         linkVerificationManager.disableYouTubeMusicHandling()
+    }
+    
+    /**
+     * Opens the changelog activity
+     */
+    private fun showChangelog() {
+        val intent = Intent(this, ChangelogActivity::class.java)
+        startActivity(intent)
     }
 } 

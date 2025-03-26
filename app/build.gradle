@@ -79,6 +79,26 @@ android {
     buildFeatures {
         viewBinding true
     }
+    
+    // Create assets directory if it doesn't exist
+    def assetsDir = file("src/main/assets")
+    if (!assetsDir.exists()) {
+        assetsDir.mkdirs()
+    }
+}
+
+// Task to copy README.md from project root to assets directory
+task copyReadmeToAssets(type: Copy) {
+    from "${rootProject.projectDir}/README.md"
+    into "src/main/assets"
+    doLast {
+        println "Copied README.md to assets directory"
+    }
+}
+
+// Ensure the README.md is copied before the assets are packaged
+android.applicationVariants.all { variant ->
+    tasks.getByPath("merge${variant.name.capitalize()}Assets").dependsOn(copyReadmeToAssets)
 }
 
 dependencies {
