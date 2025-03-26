@@ -1,9 +1,11 @@
 package com.songshifter
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.ImageButton
 import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
@@ -48,6 +50,18 @@ class ChangelogActivity : AppCompatActivity() {
 
         // Enable JavaScript for better rendering
         webView.settings.javaScriptEnabled = true
+        
+        // Set up WebViewClient to handle external links
+        webView.webViewClient = object : WebViewClient() {
+            override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+                url?.let {
+                    // Open links in external browser
+                    val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(it))
+                    startActivity(intent)
+                }
+                return true
+            }
+        }
 
         // Set up close button
         findViewById<ImageButton>(R.id.closeButton).setOnClickListener {
@@ -72,7 +86,13 @@ class ChangelogActivity : AppCompatActivity() {
                     // Convert markdown to HTML and display
                     val htmlContent = markdownToHtml(readmeContent)
                     Log.d(TAG, "Converted HTML content: $htmlContent")
-                    webView.loadDataWithBaseURL(null, htmlContent, "text/html", "UTF-8", null)
+                    webView.loadDataWithBaseURL(
+                        "https://github.com/rcoenen/songshifter-android/blob/master/",
+                        htmlContent,
+                        "text/html",
+                        "UTF-8",
+                        null
+                    )
                     progressBar.visibility = View.GONE
                     webView.visibility = View.VISIBLE
                 }
