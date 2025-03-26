@@ -48,14 +48,14 @@ class MainActivity : AppCompatActivity() {
         directionSpinner = findViewById(R.id.directionSpinner)
         directionDescription = findViewById(R.id.directionDescription)
         
-        // Set build version
-        setBuildVersion()
-        
         // Setup direction spinner
         setupDirectionSpinner()
         
         // Setup test button
         setupTestButton()
+        
+        // Set build version
+        setBuildVersion()
         
         // Update status indicators for the preferred platform
         platformManager.updateStatusIndicators()

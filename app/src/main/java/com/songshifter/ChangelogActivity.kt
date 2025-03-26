@@ -10,6 +10,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.songshifter.utils.ReadmeLoader
 import kotlinx.coroutines.launch
+import org.commonmark.parser.Parser
+import org.commonmark.renderer.html.HtmlRenderer
+import org.commonmark.ext.gfm.tables.TablesExtension
+import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension
 
 /**
  * Activity to display the full README.md contents in a WebView
@@ -18,14 +22,32 @@ class ChangelogActivity : AppCompatActivity() {
     private val TAG = "ChangelogActivity"
     private lateinit var webView: WebView
     private lateinit var progressBar: ProgressBar
+    private lateinit var parser: Parser
+    private lateinit var renderer: HtmlRenderer
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_changelog)
 
+        // Initialize CommonMark parser and renderer with extensions
+        val extensions = listOf(
+            TablesExtension.create(),
+            StrikethroughExtension.create()
+        )
+        parser = Parser.builder()
+            .extensions(extensions)
+            .build()
+        renderer = HtmlRenderer.builder()
+            .extensions(extensions)
+            .softbreak("<br>")
+            .build()
+
         // Initialize views
         webView = findViewById(R.id.readmeWebView)
         progressBar = findViewById(R.id.progressBar)
+
+        // Enable JavaScript for better rendering
+        webView.settings.javaScriptEnabled = true
 
         // Set up close button
         findViewById<ImageButton>(R.id.closeButton).setOnClickListener {
@@ -46,8 +68,10 @@ class ChangelogActivity : AppCompatActivity() {
         lifecycleScope.launch {
             ReadmeLoader.loadReadme()
                 .onSuccess { readmeContent ->
+                    Log.d(TAG, "Raw README content: $readmeContent")
                     // Convert markdown to HTML and display
                     val htmlContent = markdownToHtml(readmeContent)
+                    Log.d(TAG, "Converted HTML content: $htmlContent")
                     webView.loadDataWithBaseURL(null, htmlContent, "text/html", "UTF-8", null)
                     progressBar.visibility = View.GONE
                     webView.visibility = View.VISIBLE
@@ -75,79 +99,113 @@ class ChangelogActivity : AppCompatActivity() {
      * Converts markdown content to HTML for WebView rendering
      */
     private fun markdownToHtml(markdown: String): String {
-        // Basic stylesheet for better readability
-        val css = """
-            <style>
-                body {
-                    font-family: 'Roboto', sans-serif;
-                    line-height: 1.6;
-                    color: #333;
-                    padding: 16px;
-                    background-color: #f5f5f5;
-                }
-                h1, h2 {
-                    color: #4B00E0;
-                }
-                h3, h4 {
-                    color: #5D3FD3;
-                }
-                code {
-                    background-color: #f0f0f0;
-                    padding: 2px 4px;
-                    border-radius: 4px;
-                    font-family: monospace;
-                }
-                pre {
-                    background-color: #f0f0f0;
-                    padding: 16px;
-                    border-radius: 4px;
-                    overflow-x: auto;
-                    margin: 16px 0;
-                }
-                pre code {
-                    background-color: transparent;
-                    padding: 0;
-                    line-height: 1.2;
-                    white-space: pre-wrap;
-                    font-family: monospace;
-                }
-                pre br {
-                    line-height: 1.2;
-                    margin-bottom: 0;
-                }
-                a {
-                    color: #4B00E0;
-                }
-                ul, ol {
-                    padding-left: 20px;
-                }
-                li {
-                    margin-bottom: 8px;
-                }
-                table {
-                    border-collapse: collapse;
-                    width: 100%;
-                    margin: 16px 0;
-                    overflow-x: auto;
-                    display: block;
-                }
-                th, td {
-                    border: 1px solid #ddd;
-                    padding: 8px;
-                    text-align: left;
-                }
-                th {
-                    background-color: #4B00E0;
-                    color: white;
-                }
-                tr:nth-child(even) {
-                    background-color: #f9f9f9;
-                }
-            </style>
-            <div class="markdown-body">
-                $markdown
-            </div>
-        """
-        return css
+        // Parse markdown to AST and render to HTML
+        val document = parser.parse(markdown)
+        val htmlContent = renderer.render(document)
+        
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <style>
+                    body {
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                        line-height: 1.6;
+                        color: #333;
+                        padding: 16px;
+                        background-color: #f5f5f5;
+                        margin: 0;
+                        font-size: 16px;
+                    }
+                    h1 {
+                        color: #4B00E0;
+                        font-size: 24px;
+                        margin-top: 0;
+                        margin-bottom: 16px;
+                        padding-bottom: 8px;
+                        border-bottom: 1px solid #eee;
+                    }
+                    h2 {
+                        color: #4B00E0;
+                        font-size: 20px;
+                        margin-top: 24px;
+                        margin-bottom: 12px;
+                        padding-bottom: 6px;
+                        border-bottom: 1px solid #eee;
+                    }
+                    p {
+                        margin: 16px 0;
+                        line-height: 1.6;
+                    }
+                    ul, ol {
+                        padding-left: 24px;
+                        margin: 16px 0;
+                    }
+                    li {
+                        margin: 8px 0;
+                        line-height: 1.4;
+                    }
+                    a {
+                        color: #4B00E0;
+                        text-decoration: none;
+                    }
+                    a:hover {
+                        text-decoration: underline;
+                    }
+                    code {
+                        background-color: #f0f0f0;
+                        padding: 2px 4px;
+                        border-radius: 4px;
+                        font-family: 'Courier New', Courier, monospace;
+                        font-size: 14px;
+                    }
+                    pre {
+                        background-color: #f0f0f0;
+                        padding: 16px;
+                        border-radius: 4px;
+                        overflow-x: auto;
+                        margin: 16px 0;
+                    }
+                    pre code {
+                        background-color: transparent;
+                        padding: 0;
+                        font-size: 14px;
+                        line-height: 1.4;
+                    }
+                    blockquote {
+                        margin: 16px 0;
+                        padding-left: 16px;
+                        border-left: 4px solid #4B00E0;
+                        color: #666;
+                    }
+                    hr {
+                        border: none;
+                        border-top: 1px solid #eee;
+                        margin: 24px 0;
+                    }
+                    table {
+                        border-collapse: collapse;
+                        width: 100%;
+                        margin: 16px 0;
+                    }
+                    th, td {
+                        border: 1px solid #ddd;
+                        padding: 8px;
+                        text-align: left;
+                    }
+                    th {
+                        background-color: #f5f5f5;
+                    }
+                    tr:nth-child(even) {
+                        background-color: #f9f9f9;
+                    }
+                </style>
+            </head>
+            <body>
+                $htmlContent
+            </body>
+            </html>
+        """.trimIndent()
     }
 } 

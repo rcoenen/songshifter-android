@@ -7,7 +7,7 @@ import okhttp3.Request
 import java.io.IOException
 
 object ReadmeLoader {
-    private const val GITHUB_README_URL = "https://raw.githubusercontent.com/robmcelhinney/SongShifter/main/README.md"
+    private const val GITHUB_README_URL = "https://raw.githubusercontent.com/rcoenen/songshifter-android/master/README.md"
     private val client = OkHttpClient()
 
     suspend fun loadReadme(): Result<String> = withContext(Dispatchers.IO) {
