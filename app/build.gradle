@@ -99,6 +99,11 @@ task copyReadmeToAssets(type: Copy) {
 // Ensure the README.md is copied before the assets are packaged
 android.applicationVariants.all { variant ->
     tasks.getByPath("merge${variant.name.capitalize()}Assets").dependsOn(copyReadmeToAssets)
+    
+    // Add dependency for lint tasks
+    if (tasks.findByPath("lintVital${variant.name.capitalize()}AnalyzeRelease") != null) {
+        tasks.getByPath("lintVital${variant.name.capitalize()}AnalyzeRelease").dependsOn(copyReadmeToAssets)
+    }
 }
 
 dependencies {
