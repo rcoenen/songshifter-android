@@ -13,6 +13,7 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.songshifter.platform.YouTubeMusicStatusFactory
 
 /**
  * Manages platform selection and status across the app
@@ -26,6 +27,7 @@ class PlatformManager(
     private val uiHelpers: UIHelpers
 ) {
     private val TAG = "PlatformManager"
+    private val ytMusicStatusFactory = YouTubeMusicStatusFactory(context)
     
     /**
      * Updates all UI status indicators based on current app state
@@ -197,93 +199,13 @@ class PlatformManager(
         } 
         // For Spotify → YouTube Music (preferredPlatform == YOUTUBE_MUSIC)
         else {
-            // STEP 1: Check if YouTube Music is installed (needed for this mode)
-            ytMusicLayout.tag = "step1"
-            ytMusicLayout.visibility = View.VISIBLE
-            
-            // We need to check if YouTube Music is both installed AND enabled
-            val isYtMusicInstalled = youTubeMusicHandler.isYouTubeMusicInstalled()
-            val isYtMusicDisabled = youTubeMusicHandler.isYouTubeMusicDisabled()
-            
-            if (!isYtMusicInstalled) {
-                // YouTube Music needs to be installed in this mode
-                ytMusicStatusIcon.setBackgroundResource(R.drawable.status_red)
-                ytMusicStatusText.text = "1. ✗ YouTube Music app needs to be installed (tap to fix)"
-                ytMusicStatusText.setTextColor(context.getColor(android.R.color.holo_blue_dark))
-                ytMusicStatusText.paintFlags = ytMusicStatusText.paintFlags or android.graphics.Paint.UNDERLINE_TEXT_FLAG
-                
-                // Make the entire row clickable
-                ytMusicLayout.isClickable = true
-                ytMusicLayout.isFocusable = true
-                ytMusicLayout.setOnClickListener {
-                    val intent = Intent(Intent.ACTION_VIEW).apply {
-                        data = Uri.parse("market://details?id=com.google.android.apps.youtube.music")
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    }
-                    try {
-                        context.startActivity(intent)
-                    } catch (e: Exception) {
-                        // Fallback to browser if Play Store isn't available
-                        val fallbackIntent = Intent(Intent.ACTION_VIEW).apply {
-                            data = Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.apps.youtube.music")
-                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        }
-                        try {
-                            context.startActivity(fallbackIntent)
-                        } catch (e2: Exception) {
-                            Log.e(TAG, "Failed to open YouTube Music in Play Store or browser: ${e2.message}")
-                        }
-                    }
-                }
-                
-                // Hide the dedicated button as we made the row clickable
-                ytMusicSettingsButton.visibility = View.GONE
-            } else if (isYtMusicDisabled) {
-                // YouTube Music is installed but disabled - needs to be enabled
-                ytMusicStatusIcon.setBackgroundResource(R.drawable.status_red)
-                ytMusicStatusText.text = "1. ✗ YouTube Music app needs to be enabled (tap to fix)"
-                ytMusicStatusText.setTextColor(context.getColor(android.R.color.holo_blue_dark))
-                ytMusicStatusText.paintFlags = ytMusicStatusText.paintFlags or android.graphics.Paint.UNDERLINE_TEXT_FLAG
-                
-                // Make the entire row clickable to open YouTube Music settings
-                ytMusicLayout.isClickable = true
-                ytMusicLayout.isFocusable = true
-                ytMusicLayout.setOnClickListener {
-                    youTubeMusicHandler.openYouTubeMusicSettings()
-                    
-                    // Show toast with instructions
-                    Toast.makeText(
-                        context, 
-                        "Enable YouTube Music and tap 'Enable' under 'Open by default'", 
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-                
-                // Hide the dedicated button as we made the row clickable
-                ytMusicSettingsButton.visibility = View.GONE
-            } else {
-                // YouTube Music is installed and enabled, show success
-                ytMusicStatusIcon.setBackgroundResource(R.drawable.status_green)
-                ytMusicStatusText.text = "1. ✓ YouTube Music app is installed and enabled"
-                ytMusicStatusText.setTextColor(context.getColor(android.R.color.tab_indicator_text))
-                ytMusicStatusText.paintFlags = ytMusicStatusText.paintFlags and android.graphics.Paint.UNDERLINE_TEXT_FLAG.inv()
-                ytMusicLayout.isClickable = false
-                ytMusicLayout.isFocusable = false
-                ytMusicLayout.setOnClickListener(null)
-                ytMusicSettingsButton.visibility = View.GONE
-                
-                // IMPORTANT: Check if we need to disable this app as a handler for YouTube Music links
-                // to prevent circular redirection in this mode
-                checkLinkHandlingConfiguration()
-            }
-            
-            // STEP 2: Check if Spotify is uninstalled (needs to be uninstalled for this mode)
-            spotifyLayout.tag = "step2"
+            // STEP 1: Check if Spotify is uninstalled (needs to be uninstalled for this mode)
+            spotifyLayout.tag = "step1"
             spotifyLayout.visibility = View.VISIBLE
             
             if (spotifyHandler.isSpotifyInstalled()) {
                 spotifyStatusIcon.setBackgroundResource(R.drawable.status_red)
-                spotifyStatusText.text = "2. ✗ Spotify app needs to be uninstalled (tap to fix)"
+                spotifyStatusText.text = "1. ✗ Spotify app needs to be uninstalled (tap to fix)"
                 spotifyStatusText.setTextColor(context.getColor(android.R.color.holo_blue_dark))
                 spotifyStatusText.paintFlags = spotifyStatusText.paintFlags or android.graphics.Paint.UNDERLINE_TEXT_FLAG
                 
@@ -325,7 +247,7 @@ class PlatformManager(
                 spotifySettingsButton.visibility = View.GONE
             } else {
                 spotifyStatusIcon.setBackgroundResource(R.drawable.status_green)
-                spotifyStatusText.text = "2. ✓ Spotify app is uninstalled"
+                spotifyStatusText.text = "1. ✓ Spotify app is uninstalled"
                 spotifyStatusText.setTextColor(context.getColor(android.R.color.tab_indicator_text))
                 spotifyStatusText.paintFlags = spotifyStatusText.paintFlags and android.graphics.Paint.UNDERLINE_TEXT_FLAG.inv()
                 spotifyLayout.isClickable = false
@@ -335,6 +257,44 @@ class PlatformManager(
                 spotifyStatusText.isClickable = false
                 spotifyStatusText.setOnClickListener(null)
                 spotifySettingsButton.visibility = View.GONE
+            }
+            
+            // STEP 2: Use platform-specific check for YouTube Music
+            ytMusicLayout.tag = "step2"
+            ytMusicLayout.visibility = View.VISIBLE
+            
+            val ytMusicStatus = ytMusicStatusFactory.create()
+            
+            if (ytMusicStatus.isInCorrectState()) {
+                // Success state - YouTube Music is in the right state for this device type
+                ytMusicStatusIcon.setBackgroundResource(R.drawable.status_green)
+                ytMusicStatusText.text = ytMusicStatus.getSuccessMessage()
+                ytMusicStatusText.setTextColor(context.getColor(android.R.color.tab_indicator_text))
+                ytMusicStatusText.paintFlags = ytMusicStatusText.paintFlags and android.graphics.Paint.UNDERLINE_TEXT_FLAG.inv()
+                ytMusicLayout.isClickable = false
+                ytMusicLayout.isFocusable = false
+                ytMusicLayout.setOnClickListener(null)
+                ytMusicSettingsButton.visibility = View.GONE
+                
+                // IMPORTANT: Check if we need to disable this app as a handler for YouTube Music links
+                // to prevent circular redirection in this mode
+                checkLinkHandlingConfiguration()
+            } else {
+                // Action needed state - YouTube Music needs attention
+                ytMusicStatusIcon.setBackgroundResource(R.drawable.status_red)
+                ytMusicStatusText.text = ytMusicStatus.getActionNeededMessage()
+                ytMusicStatusText.setTextColor(context.getColor(android.R.color.holo_blue_dark))
+                ytMusicStatusText.paintFlags = ytMusicStatusText.paintFlags or android.graphics.Paint.UNDERLINE_TEXT_FLAG
+                
+                // Make the entire row clickable for fixing
+                ytMusicLayout.isClickable = true
+                ytMusicLayout.isFocusable = true
+                ytMusicLayout.setOnClickListener {
+                    ytMusicStatus.executeFixAction(it)
+                }
+                
+                // Hide the dedicated button as we made the row clickable
+                ytMusicSettingsButton.visibility = View.GONE
             }
         }
     }
