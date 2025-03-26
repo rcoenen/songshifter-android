@@ -38,6 +38,16 @@
 
     </LinearLayout>
 
+    <!-- Loading Progress -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="24dp"
+        android:indeterminateTint="#4B00E0"
+        android:visibility="gone" />
+
     <!-- WebView for displaying README.md content -->
     <WebView
         android:id="@+id/readmeWebView"

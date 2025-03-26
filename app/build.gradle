@@ -79,31 +79,6 @@ android {
     buildFeatures {
         viewBinding true
     }
-    
-    // Create assets directory if it doesn't exist
-    def assetsDir = file("src/main/assets")
-    if (!assetsDir.exists()) {
-        assetsDir.mkdirs()
-    }
-}
-
-// Task to copy README.md from project root to assets directory
-task copyReadmeToAssets(type: Copy) {
-    from "${rootProject.projectDir}/README.md"
-    into "src/main/assets"
-    doLast {
-        println "Copied README.md to assets directory"
-    }
-}
-
-// Ensure the README.md is copied before the assets are packaged
-android.applicationVariants.all { variant ->
-    tasks.getByPath("merge${variant.name.capitalize()}Assets").dependsOn(copyReadmeToAssets)
-    
-    // Add dependency for lint tasks
-    if (tasks.findByPath("lintVital${variant.name.capitalize()}AnalyzeRelease") != null) {
-        tasks.getByPath("lintVital${variant.name.capitalize()}AnalyzeRelease").dependsOn(copyReadmeToAssets)
-    }
 }
 
 dependencies {
@@ -120,6 +95,7 @@ dependencies {
     implementation 'org.jsoup:jsoup:1.17.2'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
     
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'com.squareup.okhttp3:mockwebserver:4.12.0'
