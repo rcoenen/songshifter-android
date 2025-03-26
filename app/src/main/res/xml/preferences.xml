@@ -40,8 +40,8 @@
             android:summary="Important: Set up correct link handling for your preferred platform">
             <intent
                 android:action="android.intent.action.VIEW"
-                android:targetPackage="com.musicredirector"
-                android:targetClass="com.musicredirector.ConfigurationHelpActivity" />
+                android:targetPackage="com.songshifter"
+                android:targetClass="com.songshifter.ConfigurationHelpActivity" />
         </Preference>
         
         <Preference

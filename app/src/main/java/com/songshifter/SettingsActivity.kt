@@ -163,15 +163,15 @@ class SettingsActivity : AppCompatActivity() {
             val message = if (preferredPlatform == PreferencesHelper.PLATFORM_SPOTIFY) {
                 "Your preferred platform is set to Spotify.\n\n" +
                 "For this to work correctly:\n\n" +
-                "1. Music Redirector should NOT handle Spotify links\n" +
-                "2. Music Redirector SHOULD handle YouTube Music links\n\n" +
+                "1. SongShifter should NOT handle Spotify links\n" +
+                "2. SongShifter SHOULD handle YouTube Music links\n\n" +
                 "This ensures YouTube Music links can be redirected to Spotify.\n\n" +
                 "Would you like to open Android settings to configure this?"
             } else {
                 "Your preferred platform is set to YouTube Music.\n\n" +
                 "For this to work correctly:\n\n" +
-                "1. Music Redirector should NOT handle YouTube Music links\n" +
-                "2. Music Redirector SHOULD handle Spotify links\n\n" +
+                "1. SongShifter should NOT handle YouTube Music links\n" +
+                "2. SongShifter SHOULD handle Spotify links\n\n" +
                 "This ensures Spotify links can be redirected to YouTube Music.\n\n" +
                 "Would you like to open Android settings to configure this?"
             }

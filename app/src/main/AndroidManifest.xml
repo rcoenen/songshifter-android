@@ -18,6 +18,11 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:theme="@style/AppTheme">
 
+        <!-- Add explicit metadata for link handling -->
+        <meta-data
+            android:name="android.app.default_browserapp_name"
+            android:resource="@string/app_name" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true">

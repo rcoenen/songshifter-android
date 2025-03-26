@@ -14,7 +14,7 @@ import androidx.core.content.pm.PackageInfoCompat
 import androidx.core.graphics.drawable.DrawableCompat
 
 /**
- * Main activity for the Music Redirector app
+ * Main activity for the SongShifter app
  */
 class MainActivity : AppCompatActivity() {
     private lateinit var directionSpinner: Spinner

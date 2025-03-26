@@ -211,7 +211,7 @@ class LinkVerificationManager(private val context: Context) {
             // Last resort: Show a toast explaining what to do manually
             Toast.makeText(
                 context,
-                "Please go to Settings > Apps > Music Redirector > Open by default and disable music.youtube.com handling",
+                "Please go to Settings > Apps > SongShifter > Open by default and disable music.youtube.com handling",
                 Toast.LENGTH_LONG
             ).show()
         }

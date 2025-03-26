@@ -61,7 +61,7 @@ class ConfigurationHelpActivity : AppCompatActivity() {
                 
                 How to configure:
                 
-                1. Go to Android Settings > Apps > Music Redirector
+                1. Go to Android Settings > Apps > SongShifter
                 
                 2. Tap "Open by default" > "Add link"
                 
@@ -93,7 +93,7 @@ class ConfigurationHelpActivity : AppCompatActivity() {
                 
                 1. Uninstall Spotify app completely
                 
-                2. Go to Android Settings > Apps > Music Redirector
+                2. Go to Android Settings > Apps > SongShifter
                 
                 3. Tap "Open by default" > "Add link"
                 

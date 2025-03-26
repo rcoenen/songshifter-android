@@ -21,7 +21,7 @@ class PreferencesHelper(context: Context) {
         const val PLATFORM_SPOTIFY = "spotify"
         const val PLATFORM_YOUTUBE_MUSIC = "youtube_music"
         
-        private const val PREF_NAME = "MusicRedirectorPrefs"
+        private const val PREF_NAME = "SongShifterPrefs"
         private const val KEY_TARGET_PLATFORM = "target_platform"
         const val TARGET_YOUTUBE_MUSIC = "YouTube Music"
         const val TARGET_SPOTIFY = "Spotify"

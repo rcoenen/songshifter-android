@@ -1,4 +1,4 @@
-package com.musicredirector
+package com.songshifter
 
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -133,7 +133,7 @@ class SpotifyOEmbedTest {
             connection.apply {
                 connectTimeout = 5000
                 readTimeout = 5000
-                setRequestProperty("User-Agent", "MusicRedirector Test Runner")
+                setRequestProperty("User-Agent", "SongShifter Test Runner")
             }
 
             val responseCode = connection.responseCode
